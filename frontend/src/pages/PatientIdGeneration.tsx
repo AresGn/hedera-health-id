@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Download, Share2, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Download, Share2, CheckCircle, Building2, User, Smartphone } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import qrCodeService from '@/services/qrCodeService'
 
 interface PatientData {
   nom: string
@@ -50,57 +51,61 @@ export default function PatientIdGeneration() {
 
   const generateQRCode = async (id: string) => {
     try {
-      // Utilisation de l'API QR Code (simulation avec une URL de placeholder)
-      const qrData = JSON.stringify({
+      if (!patientData) return
+
+      // Données du patient pour le QR Code
+      const qrData = {
         patientId: id,
-        nom: patientData?.nom,
-        prenom: patientData?.prenom,
-        hopital: patientData?.hopitalPrincipal,
-        timestamp: Date.now()
+        nom: patientData.nom,
+        prenom: patientData.prenom,
+        hopital: patientData.hopitalPrincipal,
+        dateNaissance: patientData.dateNaissance,
+        // Données fictives pour la démo
+        groupeSanguin: 'A+',
+        allergies: ['Pénicilline']
+      }
+
+      // Génération du QR Code avec chiffrement
+      const qrCodeDataURL = await qrCodeService.generatePatientQRCode(qrData, {
+        size: 256,
+        color: {
+          dark: '#00D4AA', // Couleur Hedera
+          light: '#FFFFFF'
+        }
       })
-      
-      // Pour la démo, on utilise une URL de QR code générique
-      // En production, on utiliserait une vraie bibliothèque de QR code
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`
-      setQrCodeUrl(qrUrl)
+
+      setQrCodeUrl(qrCodeDataURL)
     } catch (error) {
       console.error('Erreur lors de la génération du QR Code:', error)
     }
   }
 
   const handleDownload = () => {
-    // Créer un lien de téléchargement pour le QR Code
-    const link = document.createElement('a')
-    link.href = qrCodeUrl
-    link.download = `hedera-health-id-${patientId}.png`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Mon Carnet de Santé Hedera Health ID',
-          text: `Mon ID: ${patientId}\nCode USSD: ${ussdCode}`,
-          url: window.location.href
-        })
-      } catch (error) {
-        console.error('Erreur lors du partage:', error)
-        copyToClipboard()
-      }
-    } else {
-      copyToClipboard()
+    if (qrCodeUrl && patientId) {
+      qrCodeService.downloadQRCode(qrCodeUrl, `hedera-health-id-${patientId}.png`)
     }
   }
 
-  const copyToClipboard = () => {
-    const textToCopy = `Mon Carnet de Santé Hedera Health ID\nID: ${patientId}\nCode USSD: ${ussdCode}`
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
+  const handleShare = async () => {
+    if (qrCodeUrl && patientData && patientId) {
+      try {
+        const shared = await qrCodeService.shareQRCode(qrCodeUrl, {
+          nom: patientData.nom,
+          prenom: patientData.prenom,
+          patientId
+        })
+
+        if (!shared) {
+          // Fallback: données copiées dans le presse-papiers
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        }
+      } catch (error) {
+        console.error('Erreur lors du partage:', error)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    }
   }
 
   const handleAccessDashboard = () => {
@@ -136,13 +141,16 @@ export default function PatientIdGeneration() {
             <Link to="/patient/register" className="text-gray-600 hover:text-gray-800">
               <ArrowLeft className="h-6 w-6" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800">
-              🏥 HEDERA HEALTH ID
-            </h1>
+            <div className="flex items-center space-x-3">
+              <Building2 className="h-6 w-6 text-hedera-500" />
+              <h1 className="text-2xl font-bold text-gray-800">
+                HEDERA HEALTH ID
+              </h1>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-hedera-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">👤</span>
+              <User className="h-4 w-4 text-white" />
             </div>
           </div>
         </header>
@@ -154,7 +162,7 @@ export default function PatientIdGeneration() {
             <div className="text-center mb-8">
               <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                🎉 CARNET CRÉÉ!
+                CARNET CRÉÉ!
               </h2>
             </div>
 
@@ -186,8 +194,9 @@ export default function PatientIdGeneration() {
                   
                   {/* ID Patient */}
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-hedera-600 mb-2">
-                      📱 {patientId}
+                    <div className="text-2xl font-bold text-hedera-600 mb-2 flex items-center justify-center space-x-2">
+                      <Smartphone className="h-6 w-6" />
+                      <span>{patientId}</span>
                     </div>
                     <div className="text-gray-600">
                       <div className="font-medium">{patientData.prenom} {patientData.nom}</div>
@@ -200,8 +209,9 @@ export default function PatientIdGeneration() {
 
             {/* Actions rapides */}
             <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center">
-                📱 Actions rapides:
+              <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center flex items-center justify-center space-x-2">
+                <Smartphone className="h-5 w-5 text-hedera-500" />
+                <span>Actions rapides:</span>
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <Button
@@ -210,7 +220,7 @@ export default function PatientIdGeneration() {
                   className="flex items-center justify-center space-x-2"
                 >
                   <Download className="h-4 w-4" />
-                  <span>📥 TÉLÉCHARGER</span>
+                  <span>TÉLÉCHARGER</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -220,12 +230,12 @@ export default function PatientIdGeneration() {
                   {copied ? (
                     <>
                       <CheckCircle className="h-4 w-4" />
-                      <span>✅ COPIÉ</span>
+                      <span>COPIÉ</span>
                     </>
                   ) : (
                     <>
                       <Share2 className="h-4 w-4" />
-                      <span>📤 PARTAGER</span>
+                      <span>PARTAGER</span>
                     </>
                   )}
                 </Button>
@@ -235,8 +245,9 @@ export default function PatientIdGeneration() {
             {/* Code USSD */}
             <div className="bg-medical-50 rounded-lg p-4 mb-8">
               <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-700 mb-2">
-                  📞 Accès USSD:
+                <h4 className="text-lg font-semibold text-gray-700 mb-2 flex items-center justify-center space-x-2">
+                  <Smartphone className="h-5 w-5 text-medical-500" />
+                  <span>Accès USSD:</span>
                 </h4>
                 <div className="text-xl font-mono font-bold text-medical-600">
                   {ussdCode}

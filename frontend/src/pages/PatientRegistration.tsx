@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Calendar, Phone, Mail } from 'lucide-react'
+import { ArrowLeft, Calendar, Phone, Mail, Building2, FileText, User } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -128,13 +128,16 @@ export default function PatientRegistration() {
             <Link to="/" className="text-gray-600 hover:text-gray-800">
               <ArrowLeft className="h-6 w-6" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800">
-              🏥 HEDERA HEALTH ID
-            </h1>
+            <div className="flex items-center space-x-3">
+              <Building2 className="h-6 w-6 text-hedera-500" />
+              <h1 className="text-2xl font-bold text-gray-800">
+                HEDERA HEALTH ID
+              </h1>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-hedera-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">👤</span>
+              <User className="h-4 w-4 text-white" />
             </div>
           </div>
         </header>
@@ -143,9 +146,12 @@ export default function PatientRegistration() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                📝 CRÉER MON CARNET
-              </h2>
+              <div className="flex items-center justify-center space-x-3 mb-2">
+                <FileText className="h-8 w-8 text-hedera-500" />
+                <h2 className="text-3xl font-bold text-gray-800">
+                  CRÉER MON CARNET
+                </h2>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -200,7 +206,7 @@ export default function PatientRegistration() {
               />
 
               <Select
-                label="🏥 Hôpital principal"
+                label="Hôpital principal"
                 value={formData.hopitalPrincipal}
                 onChange={(e) => handleInputChange('hopitalPrincipal', e.target.value)}
                 options={hopitauxOptions}
@@ -211,7 +217,7 @@ export default function PatientRegistration() {
 
               {/* Upload de fichier */}
               <FileUpload
-                label="📋 Importer ancien dossier (optionnel)"
+                label="Importer ancien dossier (optionnel)"
                 accept=".pdf,.jpg,.jpeg,.png"
                 multiple={true}
                 onFileSelect={handleFileSelect}
@@ -230,7 +236,7 @@ export default function PatientRegistration() {
                     className="mt-1 h-4 w-4 text-hedera-500 focus:ring-hedera-500 border-gray-300 rounded"
                   />
                   <label htmlFor="conditions" className="text-sm text-gray-700">
-                    ☑️ J'accepte les conditions d'utilisation
+                    J'accepte les conditions d'utilisation
                   </label>
                 </div>
                 {errors.accepteConditions && (
@@ -246,7 +252,7 @@ export default function PatientRegistration() {
                     className="mt-1 h-4 w-4 text-hedera-500 focus:ring-hedera-500 border-gray-300 rounded"
                   />
                   <label htmlFor="consentement" className="text-sm text-gray-700">
-                    ☑️ Je consens au traitement de mes données médicales
+                    Je consens au traitement de mes données médicales
                   </label>
                 </div>
                 {errors.consentementDonnees && (

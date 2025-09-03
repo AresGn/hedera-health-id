@@ -74,7 +74,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           Cliquez pour sélectionner ou glissez-déposez vos fichiers
         </p>
         <Button variant="outline" size="sm" type="button">
-          📁 Choisir fichier
+          Choisir fichier
         </Button>
       </div>
 

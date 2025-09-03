@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage'
 import PatientDashboard from './pages/PatientDashboard'
 import PatientRegistration from './pages/PatientRegistration'
 import PatientIdGeneration from './pages/PatientIdGeneration'
+import MedecinLogin from './pages/MedecinLogin'
 import MedecinDashboard from './pages/MedecinDashboard'
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
           <Route path="/patient/id-generated" element={<PatientIdGeneration />} />
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/patient/*" element={<PatientDashboard />} />
+          <Route path="/medecin/login" element={<MedecinLogin />} />
+          <Route path="/medecin/dashboard" element={<MedecinDashboard />} />
           <Route path="/medecin/*" element={<MedecinDashboard />} />
         </Routes>
       </div>
