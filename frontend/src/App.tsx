@@ -5,6 +5,7 @@ import PatientRegistration from './pages/PatientRegistration'
 import PatientIdGeneration from './pages/PatientIdGeneration'
 import MedecinLogin from './pages/MedecinLogin'
 import MedecinDashboard from './pages/MedecinDashboard'
+import HospitalDashboard from './pages/HospitalDashboard'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/medecin/login" element={<MedecinLogin />} />
           <Route path="/medecin/dashboard" element={<MedecinDashboard />} />
           <Route path="/medecin/*" element={<MedecinDashboard />} />
+          <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
         </Routes>
       </div>
     </Router>

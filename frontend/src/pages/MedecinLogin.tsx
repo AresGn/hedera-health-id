@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Building2, Mail, Lock, Camera, Eye, EyeOff } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import ProgressBar from '@/components/ui/ProgressBar'
 import QRScanner from '@/components/QRScanner'
 import { PatientQRData } from '@/services/qrCodeService'
 
@@ -33,6 +34,31 @@ export default function MedecinLogin() {
   const [showScanner, setShowScanner] = useState(false)
   const [errors, setErrors] = useState<Partial<MedecinFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [completionPercentage, setCompletionPercentage] = useState(0)
+
+  const steps = ['Hôpital', 'Identifiants', 'Validation']
+
+  // Calculer le pourcentage de completion automatiquement
+  useEffect(() => {
+    const requiredFields = ['hopital', 'email', 'password']
+    const filledFields = requiredFields.filter(field => {
+      const value = formData[field as keyof MedecinFormData]
+      return typeof value === 'string' ? value.trim() !== '' : Boolean(value)
+    })
+
+    const percentage = (filledFields.length / requiredFields.length) * 100
+    setCompletionPercentage(percentage)
+
+    // Mise à jour automatique de l'étape
+    if (percentage >= 100) {
+      setCurrentStep(3) // Validation
+    } else if (percentage >= 66 && formData.email) {
+      setCurrentStep(2) // Identifiants
+    } else {
+      setCurrentStep(1) // Hôpital
+    }
+  }, [formData])
 
   const handleInputChange = (field: keyof MedecinFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -147,6 +173,18 @@ export default function MedecinLogin() {
                 <h2 className="text-3xl font-bold text-gray-800">
                   ESPACE MÉDECIN
                 </h2>
+              </div>
+
+              {/* Barre de progression */}
+              <ProgressBar
+                currentStep={currentStep}
+                totalSteps={3}
+                steps={steps}
+                className="mb-6"
+              />
+
+              <div className="text-sm text-gray-600 mb-4">
+                Progression: {Math.round(completionPercentage)}% complété
               </div>
             </div>
 

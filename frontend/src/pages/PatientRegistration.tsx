@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Calendar, Phone, Mail, Building2, FileText, User } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import FileUpload from '@/components/ui/FileUpload'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 interface PatientFormData {
   nom: string
@@ -50,6 +51,33 @@ export default function PatientRegistration() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<PatientFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [completionPercentage, setCompletionPercentage] = useState(0)
+
+  const steps = ['Informations', 'Hôpital', 'Documents', 'Validation']
+
+  // Calculer le pourcentage de completion automatiquement
+  useEffect(() => {
+    const requiredFields = ['nom', 'prenom', 'dateNaissance', 'telephone', 'hopitalPrincipal']
+    const filledFields = requiredFields.filter(field => {
+      const value = formData[field as keyof PatientFormData]
+      return typeof value === 'string' ? value.trim() !== '' : Boolean(value)
+    })
+
+    const percentage = (filledFields.length / requiredFields.length) * 100
+    setCompletionPercentage(percentage)
+
+    // Mise à jour automatique de l'étape
+    if (percentage >= 80 && formData.accepteConditions && formData.consentementDonnees) {
+      setCurrentStep(4) // Validation
+    } else if (percentage >= 60 && formData.hopitalPrincipal) {
+      setCurrentStep(3) // Documents
+    } else if (percentage >= 40 && (formData.nom || formData.prenom)) {
+      setCurrentStep(2) // Hôpital
+    } else {
+      setCurrentStep(1) // Informations
+    }
+  }, [formData])
 
   const handleInputChange = (field: keyof PatientFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -146,11 +174,23 @@ export default function PatientRegistration() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center space-x-3 mb-2">
+              <div className="flex items-center justify-center space-x-3 mb-4">
                 <FileText className="h-8 w-8 text-hedera-500" />
                 <h2 className="text-3xl font-bold text-gray-800">
                   CRÉER MON CARNET
                 </h2>
+              </div>
+
+              {/* Barre de progression */}
+              <ProgressBar
+                currentStep={currentStep}
+                totalSteps={4}
+                steps={steps}
+                className="mb-6"
+              />
+
+              <div className="text-sm text-gray-600 mb-4">
+                Progression: {Math.round(completionPercentage)}% complété
               </div>
             </div>
 
