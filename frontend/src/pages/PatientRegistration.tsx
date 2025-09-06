@@ -114,7 +114,7 @@ export default function PatientRegistration() {
     }
 
     // Validation téléphone
-    if (formData.telephone && !/^\+229\s?\d{8}$/.test(formData.telephone)) {
+    if (formData.telephone && !/^\+229\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}$/.test(formData.telephone)) {
       newErrors.telephone = 'Format: +229 XX XX XX XX'
     }
 

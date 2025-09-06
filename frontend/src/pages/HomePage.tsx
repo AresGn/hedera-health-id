@@ -36,9 +36,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Cartes principales Patient/Médecin */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="grid md:grid-cols-2 gap-8">
+        {/* Cartes principales Patient/Médecin/Hôpital */}
+        <div className="max-w-6xl mx-auto mb-12">
+          <div className="grid md:grid-cols-3 gap-8">
             <Link to="/patient/register" className="block">
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-hedera-500">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center space-x-3">
@@ -63,6 +63,20 @@ export default function HomePage() {
                   <li>• Scanner QR</li>
                   <li>• Consultations</li>
                   <li>• Dashboard</li>
+                </ul>
+              </div>
+            </Link>
+
+            <Link to="/hospital/dashboard" className="block">
+              <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-purple-500">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center space-x-3">
+                  <Building2 className="h-8 w-8 text-purple-500" />
+                  <span>HÔPITAL</span>
+                </h2>
+                <ul className="text-gray-600 space-y-2">
+                  <li>• Analytics</li>
+                  <li>• Statistiques</li>
+                  <li>• Administration</li>
                 </ul>
               </div>
             </Link>
