@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Calendar, Phone, Mail, Building2, FileText, User } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Calendar, Phone, Mail, Building2, FileText, User, CheckCircle2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import FileUpload from '@/components/ui/FileUpload'
 import ProgressBar from '@/components/ui/ProgressBar'
+import QRCodeGenerator from '@/components/QRCodeGenerator'
 
 interface PatientFormData {
   nom: string
@@ -37,7 +38,6 @@ const hopitauxOptions = [
 ]
 
 export default function PatientRegistration() {
-  const navigate = useNavigate()
   const [formData, setFormData] = useState<PatientFormData>({
     nom: '',
     prenom: '',
@@ -51,6 +51,8 @@ export default function PatientRegistration() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [errors, setErrors] = useState<PatientFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState(false)
+  const [generatedPatientId, setGeneratedPatientId] = useState('')
   const [currentStep, setCurrentStep] = useState(1)
   const [completionPercentage, setCompletionPercentage] = useState(0)
 
@@ -124,22 +126,20 @@ export default function PatientRegistration() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setIsSubmitting(true)
-    
+
     try {
       // Simulation de l'appel API
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Redirection vers la page de génération d'ID
-      navigate('/patient/id-generated', { 
-        state: { 
-          patientData: formData,
-          files: selectedFiles 
-        } 
-      })
+
+      // Génération de l'ID patient
+      const patientId = `BJ${new Date().getFullYear()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
+      setGeneratedPatientId(patientId)
+      setIsRegistrationComplete(true)
+
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error)
     } finally {
@@ -170,9 +170,10 @@ export default function PatientRegistration() {
           </div>
         </header>
 
-        {/* Formulaire d'inscription */}
+        {/* Formulaire d'inscription ou QR Code */}
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          {!isRegistrationComplete ? (
+            <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">
               <div className="flex items-center justify-center space-x-3 mb-4">
                 <FileText className="h-8 w-8 text-hedera-500" />
@@ -314,6 +315,60 @@ export default function PatientRegistration() {
               </div>
             </form>
           </div>
+          ) : (
+            /* Section QR Code après inscription */
+            <div className="space-y-6">
+              {/* Message de succès */}
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div className="flex items-center justify-center space-x-3 mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+                  <h2 className="text-3xl font-bold text-gray-800">
+                    INSCRIPTION RÉUSSIE !
+                  </h2>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Votre carnet de santé numérique a été créé avec succès.
+                </p>
+                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                  <p className="text-green-700 font-semibold">
+                    ID Patient: {generatedPatientId}
+                  </p>
+                  <p className="text-green-600 text-sm mt-1">
+                    Conservez précieusement cet identifiant
+                  </p>
+                </div>
+              </div>
+
+              {/* Composant QR Code */}
+              <QRCodeGenerator
+                patientData={{
+                  patientId: generatedPatientId,
+                  nom: formData.nom,
+                  prenom: formData.prenom,
+                  dateNaissance: formData.dateNaissance,
+                  telephone: formData.telephone,
+                  ville: 'Cotonou',
+                  hopitalPrincipal: formData.hopitalPrincipal
+                }}
+              />
+
+              {/* Actions */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link to="/patient/dashboard" className="flex-1">
+                    <Button variant="primary" className="w-full">
+                      Accéder à mon Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/" className="flex-1">
+                    <Button variant="outline" className="w-full">
+                      Retour à l'accueil
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
