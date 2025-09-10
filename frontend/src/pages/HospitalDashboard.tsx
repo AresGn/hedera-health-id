@@ -65,42 +65,70 @@ export default function HospitalDashboard() {
     setIsLoading(true)
     setError('')
 
-    try {
-      const response = await fetch('https://hedera-health-id-backend.vercel.app/api/v1/statistiques/dashboard')
+    // Liste des URLs à essayer dans l'ordre
+    const apiUrls = [
+      'https://hedera-health-id-backend.vercel.app/api/v1/statistiques/dashboard',
+      'http://localhost:3003/api/v1/statistiques/dashboard'
+    ]
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+    for (let i = 0; i < apiUrls.length; i++) {
+      const url = apiUrls[i]
+      console.log(`🔄 Tentative ${i + 1}/${apiUrls.length}: ${url}`)
 
-      const data = await response.json()
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Timeout de 10 secondes
+          signal: AbortSignal.timeout(10000)
+        })
 
-      if (data.success) {
-        setStats(data.data.statistiques)
-        setActivites(data.data.activitesRecentes)
-      } else {
-        throw new Error(data.error || 'Erreur lors du chargement des données')
-      }
-    } catch (err) {
-      console.error('Erreur lors du chargement des données:', err)
-      setError('Impossible de charger les données du dashboard')
-
-      // Données par défaut en cas d'erreur
-      setStats({
-        patients: { actifs: 0, croissance: '+0%' },
-        consultations: { total: 0, croissance: '+0%' },
-        economies: { montant: 0, unite: 'M FCFA' },
-        temps: { economise: 0, unite: 'heures' },
-        adoption: {
-          systeme: 0,
-          medecinsActifs: 0,
-          patientsInscrits: 0,
-          satisfaction: 0
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
-      })
-      setActivites([])
-    } finally {
-      setIsLoading(false)
+
+        const data = await response.json()
+
+        if (data.success) {
+          console.log('✅ Données chargées avec succès depuis:', url)
+          setStats(data.data.statistiques)
+          setActivites(data.data.activitesRecentes)
+          setError('') // Effacer toute erreur précédente
+          setIsLoading(false)
+          return // Succès, on sort de la fonction
+        } else {
+          throw new Error(data.error || 'Erreur lors du chargement des données')
+        }
+      } catch (err) {
+        console.warn(`❌ Échec avec ${url}:`, err)
+
+        // Si c'est la dernière URL, on affiche l'erreur
+        if (i === apiUrls.length - 1) {
+          console.error('❌ Toutes les tentatives ont échoué')
+          setError(`Impossible de charger les données du dashboard. Dernière erreur: ${err instanceof Error ? err.message : 'Erreur inconnue'}`)
+
+          // Données par défaut en cas d'erreur
+          setStats({
+            patients: { actifs: 0, croissance: '+0%' },
+            consultations: { total: 0, croissance: '+0%' },
+            economies: { montant: 0, unite: 'M FCFA' },
+            temps: { economise: 0, unite: 'heures' },
+            adoption: {
+              systeme: 0,
+              medecinsActifs: 0,
+              patientsInscrits: 0,
+              satisfaction: 0
+            }
+          })
+          setActivites([])
+        }
+        // Sinon, on continue avec l'URL suivante
+      }
     }
+
+    setIsLoading(false)
   }
 
   // const formatCurrency = (amount: number) => {
@@ -129,7 +157,7 @@ export default function HospitalDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:inset-0`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:fixed lg:inset-y-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <Building2 className="h-8 w-8 text-hedera-500" />
@@ -185,33 +213,33 @@ export default function HospitalDashboard() {
       )}
 
       {/* Contenu principal */}
-      <div className="flex-1 lg:ml-0">
+      <div className="flex-1 lg:ml-64">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between h-16 px-6">
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-500 hover:text-gray-700"
+                className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100"
               >
                 <Menu className="h-6 w-6" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">
                 {sidebarItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
               </h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-hedera-500"
+                className="bg-white border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-hedera-500"
               >
                 <option value="semaine">Cette semaine</option>
                 <option value="mois">Ce mois</option>
                 <option value="trimestre">Ce trimestre</option>
                 <option value="annee">Cette année</option>
               </select>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hidden sm:flex">
                 <Bell className="h-4 w-4" />
               </Button>
             </div>
@@ -219,15 +247,21 @@ export default function HospitalDashboard() {
         </header>
 
         {/* Contenu */}
-        <main className="p-6">
+        <main className="p-4 sm:p-6 max-w-7xl mx-auto">
           {activeTab === 'dashboard' && (
             <>
               {/* Titre de section */}
-              <div className="mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center space-x-2">
                   <BarChart3 className="h-6 w-6 text-hedera-500" />
                   <span>STATISTIQUES DU {selectedPeriod.toUpperCase()}</span>
                 </h2>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${error ? 'bg-red-500' : 'bg-green-500'} animate-pulse`}></div>
+                  <span className="text-xs text-gray-500">
+                    {error ? 'Hors ligne' : 'En ligne'}
+                  </span>
+                </div>
               </div>
 
               {/* Affichage d'erreur */}
@@ -247,116 +281,116 @@ export default function HospitalDashboard() {
 
               {/* Métriques principales */}
               {stats && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Patients */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-hedera-500" />
-                <span className="font-medium text-gray-700">PATIENTS</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.patients.actifs)} actifs</p>
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">{stats.patients.croissance} vs mois</span>
-              </div>
-            </div>
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                  {/* Patients */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-5 w-5 text-hedera-500" />
+                        <span className="font-medium text-gray-700">PATIENTS</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-2xl font-bold text-gray-800 animate-pulse">{formatNumber(stats.patients.actifs)} <span className="text-lg text-gray-600">actifs</span></p>
+                      <div className="flex items-center space-x-1">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-green-600 font-medium">{stats.patients.croissance} vs mois</span>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Consultations */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <span className="font-medium text-gray-700">CONSULT.</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.consultations.total)} total</p>
-              <div className="flex items-center space-x-1">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">{stats.consultations.croissance}</span>
-              </div>
-            </div>
-          </div>
+                  {/* Consultations */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-5 w-5 text-blue-500" />
+                        <span className="font-medium text-gray-700">CONSULT.</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.consultations.total)} <span className="text-lg text-gray-600">total</span></p>
+                      <div className="flex items-center space-x-1">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-green-600 font-medium">{stats.consultations.croissance}</span>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Économies */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-5 w-5 text-yellow-500" />
-                <span className="font-medium text-gray-700">ÉCONOMIES</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">{stats.economies.montant} {stats.economies.unite}</p>
-              <p className="text-sm text-gray-600">économisés</p>
-            </div>
-          </div>
+                  {/* Économies */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-5 w-5 text-yellow-500" />
+                        <span className="font-medium text-gray-700">ÉCONOMIES</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-2xl font-bold text-gray-800">{stats.economies.montant} {stats.economies.unite}</p>
+                      <p className="text-sm text-gray-600">économisés</p>
+                    </div>
+                  </div>
 
-          {/* Temps */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-purple-500" />
-                <span className="font-medium text-gray-700">TEMPS</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">{stats.temps.economise} {stats.temps.unite}</p>
-              <p className="text-sm text-gray-600">économisées</p>
-            </div>
-          </div>
-        </div>
+                  {/* Temps */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="h-5 w-5 text-purple-500" />
+                        <span className="font-medium text-gray-700">TEMPS</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-2xl font-bold text-gray-800">{stats.temps.economise} {stats.temps.unite}</p>
+                      <p className="text-sm text-gray-600">économisées</p>
+                    </div>
+                  </div>
+                </div>
               )}
 
-        {/* Graphique d'utilisation */}
-        {stats && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-hedera-500" />
-              <span>GRAPHIQUE UTILISATION</span>
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Adoption système</span>
-                <span className="text-sm font-medium text-gray-800">{stats.adoption.systeme}%</span>
-              </div>
-              
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div 
-                  className="bg-hedera-500 h-4 rounded-full transition-all duration-300"
-                  style={{ width: `${stats.adoption.systeme}%` }}
-                />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="text-center">
-                  <p className="text-lg font-bold text-green-600">{stats.adoption.medecinsActifs}%</p>
-                  <p className="text-xs text-gray-500">Médecins actifs</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-blue-600">{stats.adoption.patientsInscrits}%</p>
-                  <p className="text-xs text-gray-500">Patients inscrits</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-purple-600">{stats.adoption.satisfaction}%</p>
-                  <p className="text-xs text-gray-500">Satisfaction</p>
-                </div>
-              </div>
-            </div>
-          </div>
+              {/* Graphique d'utilisation */}
+              {stats && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                      <BarChart3 className="h-5 w-5 text-hedera-500" />
+                      <span>GRAPHIQUE UTILISATION</span>
+                    </h3>
 
-          {/* Activité récente */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-hedera-500" />
-              <span>ACTIVITÉ RÉCENTE</span>
-            </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Adoption système</span>
+                        <span className="text-sm font-medium text-gray-800">{stats.adoption.systeme}%</span>
+                      </div>
+
+                      <div className="w-full bg-gray-200 rounded-full h-4">
+                        <div
+                          className="bg-hedera-500 h-4 rounded-full transition-all duration-300"
+                          style={{ width: `${stats.adoption.systeme}%` }}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4 mt-6">
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-green-600">{stats.adoption.medecinsActifs}%</p>
+                          <p className="text-xs text-gray-500">Médecins actifs</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-blue-600">{stats.adoption.patientsInscrits}%</p>
+                          <p className="text-xs text-gray-500">Patients inscrits</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-purple-600">{stats.adoption.satisfaction}%</p>
+                          <p className="text-xs text-gray-500">Satisfaction</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activité récente */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                      <Calendar className="h-5 w-5 text-hedera-500" />
+                      <span>ACTIVITÉ RÉCENTE</span>
+                    </h3>
             
             <div className="space-y-4">
               {activites.length > 0 ? (
@@ -387,10 +421,10 @@ export default function HospitalDashboard() {
                   <p className="text-sm text-gray-500">Aucune activité récente</p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-        )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4">

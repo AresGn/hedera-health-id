@@ -39,48 +39,75 @@ class StatistiquesService {
   
   async getStatistiquesDuMois(): Promise<StatistiquesData> {
     try {
-      // Récupérer les vraies données de la base
-      const [
-        patientsCount,
-        consultationsCount,
-        medecinsCount,
-        patientsActifsCount
-      ] = await Promise.all([
-        prisma.patient.count({ where: { isActive: true } }),
-        prisma.consultation.count(),
-        prisma.medecin.count({ where: { isActive: true } }),
-        prisma.patient.count({ 
-          where: { 
+      // Récupérer les vraies données de la base avec gestion d'erreur
+      let patientsCount = 0
+      let consultationsCount = 0
+      let medecinsCount = 0
+      let patientsActifsCount = 0
+
+      try {
+        patientsCount = await prisma.patient.count({ where: { isActive: true } })
+      } catch (error) {
+        console.warn('Erreur lors du comptage des patients:', error)
+      }
+
+      try {
+        consultationsCount = await prisma.consultation.count()
+      } catch (error) {
+        console.warn('Table consultation non trouvée, utilisation de valeur par défaut')
+        consultationsCount = 0
+      }
+
+      try {
+        medecinsCount = await prisma.medecin.count({ where: { isActive: true } })
+      } catch (error) {
+        console.warn('Table medecin non trouvée, utilisation de valeur par défaut')
+        medecinsCount = 0
+      }
+
+      try {
+        patientsActifsCount = await prisma.patient.count({
+          where: {
             isActive: true,
             consultations: { some: {} }
           }
         })
-      ])
+      } catch (error) {
+        console.warn('Erreur lors du comptage des patients actifs:', error)
+        patientsActifsCount = patientsCount
+      }
 
       // Calculer les statistiques du mois précédent pour la croissance
       const debutMoisPrecedent = new Date()
       debutMoisPrecedent.setMonth(debutMoisPrecedent.getMonth() - 1)
       debutMoisPrecedent.setDate(1)
-      
+
       const finMoisPrecedent = new Date()
       finMoisPrecedent.setDate(0)
 
-      const [
-        patientsCountPrecedent,
-        consultationsCountPrecedent
-      ] = await Promise.all([
-        prisma.patient.count({ 
-          where: { 
+      let patientsCountPrecedent = 0
+      let consultationsCountPrecedent = 0
+
+      try {
+        patientsCountPrecedent = await prisma.patient.count({
+          where: {
             isActive: true,
             createdAt: { lte: finMoisPrecedent }
           }
-        }),
-        prisma.consultation.count({
+        })
+      } catch (error) {
+        console.warn('Erreur lors du comptage des patients précédents:', error)
+      }
+
+      try {
+        consultationsCountPrecedent = await prisma.consultation.count({
           where: {
             createdAt: { lte: finMoisPrecedent }
           }
         })
-      ])
+      } catch (error) {
+        console.warn('Erreur lors du comptage des consultations précédentes:', error)
+      }
 
       // Calculer les croissances
       const croissancePatients = patientsCountPrecedent > 0 
@@ -176,19 +203,29 @@ class StatistiquesService {
       // Compter les nouveaux patients aujourd'hui
       const aujourdhui = new Date()
       aujourdhui.setHours(0, 0, 0, 0)
-      
-      const nouveauxPatients = await prisma.patient.count({
-        where: {
-          createdAt: { gte: aujourdhui }
-        }
-      })
+
+      let nouveauxPatients = 0
+      try {
+        nouveauxPatients = await prisma.patient.count({
+          where: {
+            createdAt: { gte: aujourdhui }
+          }
+        })
+      } catch (error) {
+        console.warn('Erreur lors du comptage des nouveaux patients:', error)
+      }
 
       // Compter les médecins connectés récemment
-      const medecinsConnectes = await prisma.medecin.count({
-        where: {
-          lastLogin: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Dernières 24h
-        }
-      })
+      let medecinsConnectes = 0
+      try {
+        medecinsConnectes = await prisma.medecin.count({
+          where: {
+            lastLogin: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Dernières 24h
+          }
+        })
+      } catch (error) {
+        console.warn('Erreur lors du comptage des médecins connectés:', error)
+      }
 
       const activitesACreer = []
 
