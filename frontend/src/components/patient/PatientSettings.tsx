@@ -3,10 +3,18 @@ import Button from '@/components/ui/Button'
 import { PatientData } from '@/types/patient'
 
 interface PatientSettingsProps {
-  patientData: PatientData
+  patientData: PatientData | null
 }
 
 export default function PatientSettings({ patientData }: PatientSettingsProps) {
+  if (!patientData) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <p className="text-gray-500">Chargement des paramètres...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">

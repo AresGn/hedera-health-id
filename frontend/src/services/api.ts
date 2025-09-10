@@ -1,5 +1,5 @@
 // Configuration API pour communiquer avec le backend
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://backend-agence-gare.vercel.app'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://hedera-health-id-backend.vercel.app'
 
 interface ApiResponse<T> {
   success: boolean

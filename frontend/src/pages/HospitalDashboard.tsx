@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Building2, Users, FileText, DollarSign, Clock,
@@ -7,51 +7,100 @@ import {
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import ApiStatus from '@/components/ApiStatus'
+import PatientManagement from '@/components/hospital/PatientManagement'
+import MedecinManagement from '@/components/hospital/MedecinManagement'
+import ConsultationManagement from '@/components/hospital/ConsultationManagement'
+import StorageTest from '@/components/StorageTest'
 
 interface HospitalStats {
   patients: {
-    total: number
     actifs: number
-    croissance: number
+    croissance: string
   }
   consultations: {
     total: number
-    croissance: number
+    croissance: string
   }
   economies: {
     montant: number
-    examensEvites: number
+    unite: string
   }
   temps: {
-    gainParConsultation: number
+    economise: number
+    unite: string
   }
-  utilisation: number
+  adoption: {
+    systeme: number
+    medecinsActifs: number
+    patientsInscrits: number
+    satisfaction: number
+  }
+}
+
+interface ActiviteRecente {
+  id: string
+  type: string
+  titre: string
+  description?: string
+  count?: number
+  statut: string
+  createdAt: string
 }
 
 export default function HospitalDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('mois')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
-  
-  // Données fictives pour la démo
-  const stats: HospitalStats = {
-    patients: {
-      total: 1247,
-      actifs: 1247,
-      croissance: 12
-    },
-    consultations: {
-      total: 3456,
-      croissance: 8
-    },
-    economies: {
-      montant: 2300000, // 2.3M FCFA
-      examensEvites: 156
-    },
-    temps: {
-      gainParConsultation: 15 // minutes
-    },
-    utilisation: 82
+  const [stats, setStats] = useState<HospitalStats | null>(null)
+  const [activites, setActivites] = useState<ActiviteRecente[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // Charger les données réelles
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('https://hedera-health-id-backend.vercel.app/api/v1/statistiques/dashboard')
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        setStats(data.data.statistiques)
+        setActivites(data.data.activitesRecentes)
+      } else {
+        throw new Error(data.error || 'Erreur lors du chargement des données')
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des données:', err)
+      setError('Impossible de charger les données du dashboard')
+
+      // Données par défaut en cas d'erreur
+      setStats({
+        patients: { actifs: 0, croissance: '+0%' },
+        consultations: { total: 0, croissance: '+0%' },
+        economies: { montant: 0, unite: 'M FCFA' },
+        temps: { economise: 0, unite: 'heures' },
+        adoption: {
+          systeme: 0,
+          medecinsActifs: 0,
+          patientsInscrits: 0,
+          satisfaction: 0
+        }
+      })
+      setActivites([])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // const formatCurrency = (amount: number) => {
@@ -181,8 +230,24 @@ export default function HospitalDashboard() {
                 </h2>
               </div>
 
+              {/* Affichage d'erreur */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-800">{error}</p>
+                </div>
+              )}
+
+              {/* Indicateur de chargement */}
+              {isLoading && !stats && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hedera-500"></div>
+                  <span className="ml-2 text-gray-600">Chargement des données...</span>
+                </div>
+              )}
+
               {/* Métriques principales */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Patients */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -195,7 +260,7 @@ export default function HospitalDashboard() {
               <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.patients.actifs)} actifs</p>
               <div className="flex items-center space-x-1">
                 <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">+{stats.patients.croissance}% vs mois</span>
+                <span className="text-sm text-green-600">{stats.patients.croissance} vs mois</span>
               </div>
             </div>
           </div>
@@ -212,7 +277,7 @@ export default function HospitalDashboard() {
               <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.consultations.total)} total</p>
               <div className="flex items-center space-x-1">
                 <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">+{stats.consultations.croissance}%</span>
+                <span className="text-sm text-green-600">{stats.consultations.croissance}</span>
               </div>
             </div>
           </div>
@@ -226,8 +291,8 @@ export default function HospitalDashboard() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">2.3M FCFA</p>
-              <p className="text-sm text-gray-600">examens évités</p>
+              <p className="text-2xl font-bold text-gray-800">{stats.economies.montant} {stats.economies.unite}</p>
+              <p className="text-sm text-gray-600">économisés</p>
             </div>
           </div>
 
@@ -240,13 +305,15 @@ export default function HospitalDashboard() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-2xl font-bold text-gray-800">-{stats.temps.gainParConsultation} min</p>
-              <p className="text-sm text-gray-600">par consultation</p>
+              <p className="text-2xl font-bold text-gray-800">{stats.temps.economise} {stats.temps.unite}</p>
+              <p className="text-sm text-gray-600">économisées</p>
             </div>
           </div>
         </div>
+              )}
 
         {/* Graphique d'utilisation */}
+        {stats && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
@@ -257,27 +324,27 @@ export default function HospitalDashboard() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Adoption système</span>
-                <span className="text-sm font-medium text-gray-800">{stats.utilisation}%</span>
+                <span className="text-sm font-medium text-gray-800">{stats.adoption.systeme}%</span>
               </div>
               
               <div className="w-full bg-gray-200 rounded-full h-4">
                 <div 
                   className="bg-hedera-500 h-4 rounded-full transition-all duration-300"
-                  style={{ width: `${stats.utilisation}%` }}
+                  style={{ width: `${stats.adoption.systeme}%` }}
                 />
               </div>
               
               <div className="grid grid-cols-3 gap-4 mt-6">
                 <div className="text-center">
-                  <p className="text-lg font-bold text-green-600">85%</p>
+                  <p className="text-lg font-bold text-green-600">{stats.adoption.medecinsActifs}%</p>
                   <p className="text-xs text-gray-500">Médecins actifs</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-bold text-blue-600">78%</p>
+                  <p className="text-lg font-bold text-blue-600">{stats.adoption.patientsInscrits}%</p>
                   <p className="text-xs text-gray-500">Patients inscrits</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-bold text-purple-600">92%</p>
+                  <p className="text-lg font-bold text-purple-600">{stats.adoption.satisfaction}%</p>
                   <p className="text-xs text-gray-500">Satisfaction</p>
                 </div>
               </div>
@@ -292,32 +359,38 @@ export default function HospitalDashboard() {
             </h3>
             
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">156 nouveaux patients</p>
-                  <p className="text-xs text-gray-500">Aujourd'hui</p>
+              {activites.length > 0 ? (
+                activites.slice(0, 3).map((activite) => {
+                  const getActivityColor = (type: string) => {
+                    switch (type) {
+                      case 'nouveau_patient': return { bg: 'bg-green-50', dot: 'bg-green-500' }
+                      case 'medecin_connecte': return { bg: 'bg-blue-50', dot: 'bg-blue-500' }
+                      case 'maintenance': return { bg: 'bg-yellow-50', dot: 'bg-yellow-500' }
+                      default: return { bg: 'bg-gray-50', dot: 'bg-gray-500' }
+                    }
+                  }
+
+                  const colors = getActivityColor(activite.type)
+
+                  return (
+                    <div key={activite.id} className={`flex items-center space-x-3 p-3 ${colors.bg} rounded-lg`}>
+                      <div className={`w-2 h-2 ${colors.dot} rounded-full`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">{activite.titre}</p>
+                        <p className="text-xs text-gray-500">{activite.description}</p>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">Aucune activité récente</p>
                 </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">23 médecins connectés</p>
-                  <p className="text-xs text-gray-500">En ce moment</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">Maintenance programmée</p>
-                  <p className="text-xs text-gray-500">Dimanche 3h-5h</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
+        )}
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -336,24 +409,15 @@ export default function HospitalDashboard() {
 
           {/* Autres onglets */}
           {activeTab === 'patients' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Gestion des Patients</h3>
-              <p className="text-gray-600">Interface de gestion des patients en cours de développement...</p>
-            </div>
+            <PatientManagement />
           )}
 
           {activeTab === 'medecins' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Gestion des Médecins</h3>
-              <p className="text-gray-600">Interface de gestion des médecins en cours de développement...</p>
-            </div>
+            <MedecinManagement />
           )}
 
           {activeTab === 'consultations' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Consultations</h3>
-              <p className="text-gray-600">Interface de gestion des consultations en cours de développement...</p>
-            </div>
+            <ConsultationManagement />
           )}
 
           {activeTab === 'analytics' && (
@@ -376,6 +440,8 @@ export default function HospitalDashboard() {
                 <h3 className="text-lg font-semibold mb-4">Base de Données</h3>
                 <ApiStatus showDetails={true} className="mb-4" />
               </div>
+
+              <StorageTest />
 
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h4 className="font-semibold mb-3">Gestion des données</h4>

@@ -1,109 +1,136 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Building2, User, Bell, FileText, Activity, Shield, Settings } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Building2, User, Bell, FileText, Activity, Shield, Settings, LogOut } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import PatientOverview from '@/components/patient/PatientOverview'
 import PatientConsultations from '@/components/patient/PatientConsultations'
 import PatientPermissions from '@/components/patient/PatientPermissions'
 import PatientSettings from '@/components/patient/PatientSettings'
+import PatientDocuments from '@/components/patient/PatientDocuments'
 import { PatientData, Consultation, MedecinAutorise, DashboardTab } from '@/types/patient'
+import { useSession } from '@/components/ProtectedRoute'
+// import { useApi } from '@/services/api'
 
 export default function PatientDashboard() {
-  const location = useLocation()
-  const navigate = useNavigate()
+  // const location = useLocation()
+  // const navigate = useNavigate()
+  const { sessionData, logout } = useSession('patient')
+  // const api = useApi()
+
   const [patientData, setPatientData] = useState<PatientData | null>(null)
   const [consultations, setConsultations] = useState<Consultation[]>([])
   const [medecinsAutorises, setMedecinsAutorises] = useState<MedecinAutorise[]>([])
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    // Récupérer les données du patient depuis l'état de navigation ou localStorage
-    const data = location.state?.patientData || JSON.parse(localStorage.getItem('patientData') || '{}')
-    
-    if (!data.patientId) {
-      // Rediriger vers l'inscription si pas de données
-      navigate('/patient/register')
-      return
+    if (sessionData?.patientId) {
+      loadPatientData(sessionData.patientId)
     }
+  }, [sessionData])
 
-    setPatientData(data)
-    
-    // Charger les données fictives pour la démo
-    loadDemoData(data.patientId)
-  }, [location.state, navigate])
+  const loadPatientData = async (patientId: string) => {
+    setIsLoading(true)
+    setError('')
 
-  const loadDemoData = (_patientId: string) => {
-    // Consultations fictives
-    const demoConsultations: Consultation[] = [
-      {
-        id: '1',
-        date: '2025-01-02',
-        medecin: 'Dr. ADJAHOUI',
-        hopital: 'CHU-MEL',
-        type: 'Consultation générale',
-        statut: 'terminee',
-        resume: 'Contrôle de routine. État général satisfaisant.'
-      },
-      {
-        id: '2',
-        date: '2025-01-15',
-        medecin: 'Dr. KOSSOU',
-        hopital: 'CHU-MEL',
-        type: 'Suivi cardiologique',
-        statut: 'programmee'
-      },
-      {
-        id: '3',
-        date: '2024-12-20',
-        medecin: 'Dr. SOGLO',
-        hopital: 'CNHU',
-        type: 'Urgences',
-        statut: 'terminee',
-        resume: 'Traitement pour infection respiratoire. Guérison complète.'
+    try {
+      // Créer les données du patient basées sur l'ID de session
+      const mockPatientData: PatientData = {
+        patientId: patientId,
+        nom: patientId.includes('KOSSOU') ? 'KOSSOU' : 'PATIENT',
+        prenom: patientId.includes('KOSSOU') ? 'Adjoa' : 'Utilisateur',
+        dateNaissance: '1990-05-12',
+        telephone: '+229 97 XX XX XX',
+        email: 'patient@example.com',
+        hopitalPrincipal: 'CHU-MEL'
       }
-    ]
 
-    // Médecins autorisés fictifs
-    const demoMedecins: MedecinAutorise[] = [
-      {
-        id: '1',
-        nom: 'ADJAHOUI',
-        prenom: 'Dr. Jean',
-        specialite: 'Médecine Générale',
-        hopital: 'CHU-MEL',
-        dateAutorisation: '2024-01-15',
-        statut: 'actif'
-      },
-      {
-        id: '2',
-        nom: 'KOSSOU',
-        prenom: 'Dr. Marie',
-        specialite: 'Cardiologie',
-        hopital: 'CHU-MEL',
-        dateAutorisation: '2024-06-10',
-        statut: 'actif'
-      },
-      {
-        id: '3',
-        nom: 'SOGLO',
-        prenom: 'Dr. Paul',
-        specialite: 'Urgences',
-        hopital: 'CNHU',
-        dateAutorisation: '2024-12-20',
-        statut: 'actif'
-      }
-    ]
+      // Consultations fictives (en attendant l'API)
+      const demoConsultations: Consultation[] = [
+        {
+          id: '1',
+          date: '2025-01-02',
+          medecin: 'Dr. ADJAHOUI',
+          hopital: 'CHU-MEL',
+          type: 'Consultation générale',
+          statut: 'terminee',
+          resume: 'Contrôle de routine. État général satisfaisant.'
+        },
+        {
+          id: '2',
+          date: '2025-01-15',
+          medecin: 'Dr. KOSSOU',
+          hopital: 'CHU-MEL',
+          type: 'Suivi cardiologique',
+          statut: 'programmee'
+        },
+        {
+          id: '3',
+          date: '2024-12-20',
+          medecin: 'Dr. SOGLO',
+          hopital: 'CNHU',
+          type: 'Urgences',
+          statut: 'terminee',
+          resume: 'Traitement pour infection respiratoire. Guérison complète.'
+        }
+      ]
 
-    setConsultations(demoConsultations)
-    setMedecinsAutorises(demoMedecins)
+      // Médecins autorisés fictifs (en attendant l'API)
+      const demoMedecins: MedecinAutorise[] = [
+        {
+          id: '1',
+          nom: 'ADJAHOUI',
+          prenom: 'Dr. Jean',
+          specialite: 'Médecine Générale',
+          hopital: 'CHU-MEL',
+          dateAutorisation: '2024-01-15',
+          statut: 'actif'
+        },
+        {
+          id: '2',
+          nom: 'KOSSOU',
+          prenom: 'Dr. Marie',
+          specialite: 'Cardiologie',
+          hopital: 'CHU-MEL',
+          dateAutorisation: '2024-06-10',
+          statut: 'actif'
+        }
+      ]
+
+      setPatientData(mockPatientData)
+      setConsultations(demoConsultations)
+      setMedecinsAutorises(demoMedecins)
+
+    } catch (err) {
+      setError('Erreur lors du chargement des données patient')
+      console.error('Erreur chargement patient:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  if (!patientData) {
+  if (isLoading || !patientData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-hedera-50 to-medical-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hedera-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-600">Chargement des données patient...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-hedera-50 to-medical-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <Button onClick={() => loadPatientData(sessionData?.patientId || '')}>
+            Réessayer
+          </Button>
         </div>
       </div>
     )
@@ -131,9 +158,20 @@ export default function PatientDashboard() {
               <span className="text-sm font-medium text-gray-700">
                 {patientData.prenom} {patientData.nom}
               </span>
+              <span className="text-xs text-gray-500 ml-2">
+                ({patientData.patientId})
+              </span>
             </div>
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="text-red-600 hover:text-red-700 hover:border-red-300"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </header>
@@ -145,6 +183,7 @@ export default function PatientDashboard() {
               {[
                 { id: 'overview', label: 'Vue d\'ensemble', icon: Activity },
                 { id: 'consultations', label: 'Consultations', icon: FileText },
+                { id: 'documents', label: 'Documents', icon: FileText },
                 { id: 'permissions', label: 'Permissions', icon: Shield },
                 { id: 'settings', label: 'Paramètres', icon: Settings }
               ].map((tab) => (
@@ -177,6 +216,10 @@ export default function PatientDashboard() {
 
           {activeTab === 'consultations' && (
             <PatientConsultations consultations={consultations} />
+          )}
+
+          {activeTab === 'documents' && (
+            <PatientDocuments />
           )}
 
           {activeTab === 'permissions' && (

@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import { config, validateConfig } from './config/app.config'
 import { connectDatabase, disconnectDatabase } from './config/database.config'
 import prisma from './config/database.config'
+import statistiquesRouter from './routes/statistiques'
 
 // Charger les variables d'environnement
 dotenv.config()
@@ -16,9 +17,39 @@ const app = express()
 
 // Middlewares de sécurité
 app.use(helmet())
+
+// Configuration CORS pour accepter plusieurs origines
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'http://localhost:5173',
+  'https://hedera-health-id.vercel.app',
+  'https://hedera-health-id-frontend.vercel.app',
+  config.CORS_ORIGIN
+].filter(Boolean)
+
 app.use(cors({
-  origin: config.CORS_ORIGIN,
-  credentials: true
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (ex: applications mobiles, Postman)
+    if (!origin) return callback(null, true)
+
+    // En développement, autoriser localhost sur tous les ports
+    if (config.NODE_ENV === 'development' && origin?.includes('localhost')) {
+      return callback(null, true)
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+
+    console.log(`CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins)
+    return callback(new Error('Non autorisé par CORS'), false)
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }))
 
 // Middlewares de parsing
@@ -134,6 +165,9 @@ app.get('/api/v1/patients', async (req, res) => {
     })
   }
 })
+
+// Routes API
+app.use('/api/v1/statistiques', statistiquesRouter)
 
 // Middleware de gestion d'erreurs
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

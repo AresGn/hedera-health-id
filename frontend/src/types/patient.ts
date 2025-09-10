@@ -28,4 +28,4 @@ export interface MedecinAutorise {
   statut: 'actif' | 'suspendu'
 }
 
-export type DashboardTab = 'overview' | 'consultations' | 'permissions' | 'settings'
+export type DashboardTab = 'overview' | 'consultations' | 'documents' | 'permissions' | 'settings'

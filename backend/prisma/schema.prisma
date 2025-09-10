@@ -29,10 +29,14 @@ model Patient {
   maladiesChroniques String[] // Array de strings
   contactUrgence    String?
   
+  // Authentification
+  passwordHash      String
+  lastLogin         DateTime?
+
   // Données blockchain
   hederaAccountId   String?  @unique
   publicKey         String?
-  
+
   // Métadonnées
   hopitalPrincipal  String   // Référence à l'hôpital
   qrCodeHash        String?  @unique
@@ -230,20 +234,69 @@ model AuditLog {
 model Session {
   id          String   @id @default(cuid())
   sessionId   String   @unique
-  
+
   // Utilisateur
   userId      String
   userType    String   // patient, medecin
-  
+
   // Session data
   data        Json
   expiresAt   DateTime
-  
+
   // Métadonnées
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@map("sessions")
+}
+
+model Statistique {
+  id              String   @id @default(cuid())
+
+  // Période
+  periode         String   // 'daily', 'weekly', 'monthly', 'yearly'
+  date            DateTime // Date de la statistique
+
+  // Métriques
+  patientsActifs  Int      @default(0)
+  consultationsTotal Int   @default(0)
+  medecinsActifs  Int      @default(0)
+  economiesFCFA   Float    @default(0)
+  tempsEconomise  Int      @default(0) // en minutes
+
+  // Adoption système
+  adoptionSysteme Float    @default(0) // pourcentage
+  medecinsConnectes Float  @default(0) // pourcentage
+  patientsInscrits Float   @default(0) // pourcentage
+  satisfaction    Float    @default(0) // pourcentage
+
+  // Métadonnées
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([periode, date])
+  @@map("statistiques")
+}
+
+model ActiviteRecente {
+  id          String   @id @default(cuid())
+
+  // Type d'activité
+  type        String   // 'nouveau_patient', 'medecin_connecte', 'maintenance', etc.
+  titre       String
+  description String?
+
+  // Données associées
+  count       Int?     // nombre d'éléments concernés
+  userId      String?  // utilisateur concerné
+
+  // Statut
+  statut      String   @default("actif")
+
+  // Métadonnées
+  createdAt   DateTime @default(now())
+
+  @@map("activites_recentes")
 }
 
 // ================================

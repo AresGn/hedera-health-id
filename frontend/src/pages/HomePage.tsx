@@ -39,19 +39,29 @@ export default function HomePage() {
         {/* Cartes principales Patient/Médecin/Hôpital */}
         <div className="max-w-6xl mx-auto mb-12">
           <div className="grid md:grid-cols-3 gap-8">
-            <Link to="/patient/register" className="block">
-              <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-hedera-500">
-                <h2 className="text-2xl font-semibold mb-4 flex items-center space-x-3">
-                  <User className="h-8 w-8 text-hedera-500" />
-                  <span>PATIENT</span>
-                </h2>
-                <ul className="text-gray-600 space-y-2">
-                  <li>• Mon carnet</li>
-                  <li>• Mes données</li>
-                  <li>• USSD *789#</li>
-                </ul>
+            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-hedera-500">
+              <h2 className="text-2xl font-semibold mb-4 flex items-center space-x-3">
+                <User className="h-8 w-8 text-hedera-500" />
+                <span>PATIENT</span>
+              </h2>
+              <ul className="text-gray-600 space-y-2 mb-6">
+                <li>• Mon carnet</li>
+                <li>• Mes données</li>
+                <li>• USSD *789#</li>
+              </ul>
+              <div className="space-y-3">
+                <Link to="/patient/login" className="block">
+                  <Button variant="primary" className="w-full">
+                    Se connecter
+                  </Button>
+                </Link>
+                <Link to="/patient/register" className="block">
+                  <Button variant="outline" className="w-full">
+                    Créer mon carnet
+                  </Button>
+                </Link>
               </div>
-            </Link>
+            </div>
 
             <Link to="/medecin/login" className="block">
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-medical-500">

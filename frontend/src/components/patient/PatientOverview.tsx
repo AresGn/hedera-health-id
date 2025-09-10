@@ -3,12 +3,20 @@ import Button from '@/components/ui/Button'
 import { PatientData, Consultation, MedecinAutorise } from '@/types/patient'
 
 interface PatientOverviewProps {
-  patientData: PatientData
+  patientData: PatientData | null
   consultations: Consultation[]
   medecinsAutorises: MedecinAutorise[]
 }
 
 export default function PatientOverview({ patientData, consultations, medecinsAutorises }: PatientOverviewProps) {
+  if (!patientData) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <p className="text-gray-500">Chargement des données patient...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Carte d'identité patient */}

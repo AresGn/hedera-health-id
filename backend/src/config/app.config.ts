@@ -31,7 +31,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().optional(),
   
   // CORS
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  CORS_ORIGIN: z.string().default('https://hedera-health-id.vercel.app'),
   
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'), // 15 minutes

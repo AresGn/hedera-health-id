@@ -16,9 +16,29 @@ const app = express()
 
 // Middlewares de sécurité
 app.use(helmet())
+
+// Configuration CORS pour accepter plusieurs origines
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://hedera-health-id.vercel.app',
+  config.CORS_ORIGIN
+].filter(Boolean)
+
 app.use(cors({
-  origin: config.CORS_ORIGIN,
-  credentials: true
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (ex: applications mobiles, Postman)
+    if (!origin) return callback(null, true)
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+
+    return callback(new Error('Non autorisé par CORS'), false)
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))
 
 // Middlewares de parsing

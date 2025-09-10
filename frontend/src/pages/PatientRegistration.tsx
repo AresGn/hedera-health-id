@@ -7,6 +7,7 @@ import Select from '@/components/ui/Select'
 import FileUpload from '@/components/ui/FileUpload'
 import ProgressBar from '@/components/ui/ProgressBar'
 import QRCodeGenerator from '@/components/QRCodeGenerator'
+import { useFileStorage, UploadProgress } from '@/services/fileStorageService'
 
 interface PatientFormData {
   nom: string
@@ -14,6 +15,8 @@ interface PatientFormData {
   dateNaissance: string
   telephone: string
   email: string
+  motDePasse: string
+  confirmerMotDePasse: string
   hopitalPrincipal: string
   accepteConditions: boolean
   consentementDonnees: boolean
@@ -25,6 +28,8 @@ interface PatientFormErrors {
   dateNaissance?: string
   telephone?: string
   email?: string
+  motDePasse?: string
+  confirmerMotDePasse?: string
   hopitalPrincipal?: string
   accepteConditions?: string
   consentementDonnees?: string
@@ -44,6 +49,8 @@ export default function PatientRegistration() {
     dateNaissance: '',
     telephone: '',
     email: '',
+    motDePasse: '',
+    confirmerMotDePasse: '',
     hopitalPrincipal: '',
     accepteConditions: false,
     consentementDonnees: false,
@@ -55,12 +62,16 @@ export default function PatientRegistration() {
   const [generatedPatientId, setGeneratedPatientId] = useState('')
   const [currentStep, setCurrentStep] = useState(1)
   const [completionPercentage, setCompletionPercentage] = useState(0)
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false)
+
+  const fileStorage = useFileStorage()
 
   const steps = ['Informations', 'Hôpital', 'Documents', 'Validation']
 
   // Calculer le pourcentage de completion automatiquement
   useEffect(() => {
-    const requiredFields = ['nom', 'prenom', 'dateNaissance', 'telephone', 'hopitalPrincipal']
+    const requiredFields = ['nom', 'prenom', 'dateNaissance', 'telephone', 'motDePasse', 'confirmerMotDePasse', 'hopitalPrincipal']
     const filledFields = requiredFields.filter(field => {
       const value = formData[field as keyof PatientFormData]
       return typeof value === 'string' ? value.trim() !== '' : Boolean(value)
@@ -106,6 +117,8 @@ export default function PatientRegistration() {
     if (!formData.prenom.trim()) newErrors.prenom = 'Le prénom est requis'
     if (!formData.dateNaissance) newErrors.dateNaissance = 'La date de naissance est requise'
     if (!formData.telephone.trim()) newErrors.telephone = 'Le téléphone est requis'
+    if (!formData.motDePasse.trim()) newErrors.motDePasse = 'Le mot de passe est requis'
+    if (!formData.confirmerMotDePasse.trim()) newErrors.confirmerMotDePasse = 'Veuillez confirmer le mot de passe'
     if (!formData.hopitalPrincipal) newErrors.hopitalPrincipal = 'Veuillez sélectionner un hôpital'
     if (!formData.accepteConditions) newErrors.accepteConditions = 'Vous devez accepter les conditions'
     if (!formData.consentementDonnees) newErrors.consentementDonnees = 'Le consentement est requis'
@@ -120,6 +133,17 @@ export default function PatientRegistration() {
       newErrors.telephone = 'Format: +229 XX XX XX XX'
     }
 
+    // Validation mot de passe
+    if (formData.motDePasse && formData.motDePasse.length < 8) {
+      newErrors.motDePasse = 'Le mot de passe doit contenir au moins 8 caractères'
+    }
+    if (formData.motDePasse && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.motDePasse)) {
+      newErrors.motDePasse = 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre'
+    }
+    if (formData.motDePasse !== formData.confirmerMotDePasse) {
+      newErrors.confirmerMotDePasse = 'Les mots de passe ne correspondent pas'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -132,11 +156,30 @@ export default function PatientRegistration() {
     setIsSubmitting(true)
 
     try {
-      // Simulation de l'appel API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
       // Génération de l'ID patient
       const patientId = `BJ${new Date().getFullYear()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
+
+      // Upload des fichiers si présents
+      if (selectedFiles.length > 0) {
+        setIsUploadingFiles(true)
+        try {
+          const uploadedFiles = await fileStorage.uploadFiles(
+            selectedFiles,
+            patientId,
+            (progress) => setUploadProgress(progress)
+          )
+          console.log('Fichiers uploadés:', uploadedFiles)
+        } catch (uploadError) {
+          console.error('Erreur lors de l\'upload des fichiers:', uploadError)
+          // Continuer même si l'upload échoue
+        } finally {
+          setIsUploadingFiles(false)
+        }
+      }
+
+      // Simulation de l'appel API pour créer le patient
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
       setGeneratedPatientId(patientId)
       setIsRegistrationComplete(true)
 
@@ -246,6 +289,27 @@ export default function PatientRegistration() {
                 error={errors.email}
               />
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Mot de passe"
+                  type="password"
+                  value={formData.motDePasse}
+                  onChange={(e) => handleInputChange('motDePasse', e.target.value)}
+                  placeholder="Minimum 8 caractères"
+                  error={errors.motDePasse}
+                  required
+                />
+                <Input
+                  label="Confirmer le mot de passe"
+                  type="password"
+                  value={formData.confirmerMotDePasse}
+                  onChange={(e) => handleInputChange('confirmerMotDePasse', e.target.value)}
+                  placeholder="Retapez votre mot de passe"
+                  error={errors.confirmerMotDePasse}
+                  required
+                />
+              </div>
+
               <Select
                 label="Hôpital principal"
                 value={formData.hopitalPrincipal}
@@ -265,6 +329,33 @@ export default function PatientRegistration() {
                 selectedFiles={selectedFiles}
                 onFileRemove={handleFileRemove}
               />
+
+              {/* Indicateur de progression d'upload */}
+              {isUploadingFiles && uploadProgress.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700">Upload en cours...</p>
+                  {uploadProgress.map((progress) => (
+                    <div key={progress.fileId} className="space-y-1">
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>{progress.fileName}</span>
+                        <span>{Math.round(progress.progress)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            progress.status === 'error' ? 'bg-red-500' :
+                            progress.status === 'completed' ? 'bg-green-500' : 'bg-hedera-500'
+                          }`}
+                          style={{ width: `${progress.progress}%` }}
+                        />
+                      </div>
+                      {progress.error && (
+                        <p className="text-xs text-red-600">{progress.error}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Cases à cocher */}
               <div className="space-y-4">
