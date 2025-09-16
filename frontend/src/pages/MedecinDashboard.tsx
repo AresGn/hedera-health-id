@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import QRScanner from '@/components/QRScanner'
 import { PatientQRData } from '@/services/qrCodeService'
+import { getMedecinData, clearMedecinData } from '@/utils/storage'
 // import { useApi } from '@/services/api'
 
 interface MedecinData {
@@ -69,16 +70,20 @@ export default function MedecinDashboard() {
   useEffect(() => {
     // Récupérer les données du médecin depuis la navigation ou le stockage
     const stateData = location.state?.medecinData
-    const storedData = localStorage.getItem('medecin_data') || sessionStorage.getItem('medecin_data')
 
     if (stateData) {
       setMedecinData(stateData)
-    } else if (storedData) {
-      setMedecinData(JSON.parse(storedData))
     } else {
-      // Rediriger vers la connexion si pas de données
-      navigate('/medecin/login')
-      return
+      // Utiliser l'utilitaire sécurisé pour récupérer les données
+      const storedMedecinData = getMedecinData()
+
+      if (storedMedecinData) {
+        setMedecinData(storedMedecinData)
+      } else {
+        // Rediriger vers la connexion si pas de données valides
+        navigate('/medecin/login')
+        return
+      }
     }
 
     loadDashboardData()
@@ -179,10 +184,7 @@ export default function MedecinDashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('medecin_token')
-    localStorage.removeItem('medecin_data')
-    sessionStorage.removeItem('medecin_token')
-    sessionStorage.removeItem('medecin_data')
+    clearMedecinData()
     navigate('/medecin/login')
   }
 

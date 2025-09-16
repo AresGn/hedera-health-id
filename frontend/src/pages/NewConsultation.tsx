@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import { getMedecinData } from '@/utils/storage'
 
 
 interface PatientData {
@@ -133,13 +134,17 @@ export default function NewConsultation() {
   useEffect(() => {
     // Récupérer les données du patient et du médecin
     const patientFromState = location.state?.patientData
-    const medecinFromState = location.state?.medecinData || 
-                           JSON.parse(localStorage.getItem('medecin_data') || sessionStorage.getItem('medecin_data') || '{}')
-    
+
+    // Récupération sécurisée des données médecin
+    let medecinFromState = location.state?.medecinData
+    if (!medecinFromState) {
+      medecinFromState = getMedecinData()
+    }
+
     if (patientFromState) {
       setPatientData(patientFromState)
     }
-    
+
     if (medecinFromState && medecinFromState.id) {
       setMedecinData(medecinFromState)
     } else {
@@ -743,7 +748,7 @@ export default function NewConsultation() {
                   value={nouvelExamen}
                   onChange={(e) => setNouvelExamen(e.target.value)}
                   placeholder="Autre examen..."
-                  onKeyPress={(e) => e.key === 'Enter' && ajouterExamen()}
+                  onKeyDown={(e) => e.key === 'Enter' && ajouterExamen()}
                 />
                 <Button
                   onClick={ajouterExamen}

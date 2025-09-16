@@ -8,6 +8,7 @@ import ProgressBar from '@/components/ui/ProgressBar'
 import QRScanner from '@/components/QRScanner'
 import { PatientQRData } from '@/services/qrCodeService'
 import { useApi } from '@/services/api'
+import { storeMedecinData } from '@/utils/storage'
 
 interface MedecinFormData {
   hopital: string
@@ -169,14 +170,8 @@ export default function MedecinLogin() {
         // Réinitialiser les tentatives en cas de succès
         setAuthAttempts(0)
 
-        // Stocker le token et les données médecin
-        if (formData.rememberMe) {
-          localStorage.setItem('medecin_token', response.data.token)
-          localStorage.setItem('medecin_data', JSON.stringify(response.data.medecin))
-        } else {
-          sessionStorage.setItem('medecin_token', response.data.token)
-          sessionStorage.setItem('medecin_data', JSON.stringify(response.data.medecin))
-        }
+        // Stocker le token et les données médecin de manière sécurisée
+        storeMedecinData(response.data.medecin, response.data.token, formData.rememberMe)
 
         // Redirection vers le dashboard médecin
         navigate('/medecin/dashboard', {
