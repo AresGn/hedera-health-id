@@ -1,5 +1,5 @@
 // Configuration API pour communiquer avec le backend
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://hedera-health-id-backend.vercel.app'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001'
 
 interface ApiResponse<T> {
   success: boolean
@@ -139,6 +139,16 @@ class ApiService {
     })
   }
 
+  // Récupérer la liste des médecins
+  async getMedecins(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/api/v1/medecins')
+  }
+
+  // Récupérer la liste des consultations
+  async getConsultations(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/api/v1/consultations')
+  }
+
   // Vérifier la connectivité
   async checkConnectivity(): Promise<boolean> {
     try {
@@ -160,9 +170,11 @@ export function useApi() {
     testApi: () => apiService.testApi(),
     getHospitals: () => apiService.getHospitals(),
     getPatients: () => apiService.getPatients(),
-    createPatient: (data: Parameters<typeof apiService.createPatient>[0]) => 
+    getMedecins: () => apiService.getMedecins(),
+    getConsultations: () => apiService.getConsultations(),
+    createPatient: (data: Parameters<typeof apiService.createPatient>[0]) =>
       apiService.createPatient(data),
-    loginMedecin: (credentials: Parameters<typeof apiService.loginMedecin>[0]) => 
+    loginMedecin: (credentials: Parameters<typeof apiService.loginMedecin>[0]) =>
       apiService.loginMedecin(credentials),
     checkConnectivity: () => apiService.checkConnectivity(),
   }

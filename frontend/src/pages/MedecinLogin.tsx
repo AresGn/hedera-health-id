@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Building2, Mail, Lock, Camera, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Building2, Mail, Lock, Camera, Eye, EyeOff, Shield, AlertTriangle, CheckCircle } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import ProgressBar from '@/components/ui/ProgressBar'
 import QRScanner from '@/components/QRScanner'
 import { PatientQRData } from '@/services/qrCodeService'
+import { useApi } from '@/services/api'
 
 interface MedecinFormData {
   hopital: string
@@ -15,6 +16,8 @@ interface MedecinFormData {
   rememberMe: boolean
 }
 
+
+
 const hopitauxOptions = [
   { value: 'chu-mel', label: 'CHU-MEL - Cotonou' },
   { value: 'cnhu', label: 'CNHU - Cotonou' },
@@ -22,8 +25,17 @@ const hopitauxOptions = [
   { value: 'akpakpa', label: 'Centre de Santé Akpakpa' },
 ]
 
+// Validation des emails professionnels par hôpital
+const emailDomains: Record<string, string[]> = {
+  'chu-mel': ['chu-mel.bj', 'chumel.org'],
+  'cnhu': ['cnhu.bj', 'cnhu-hkm.org'],
+  'pasteur': ['pasteur.bj', 'clinique-pasteur.com'],
+  'akpakpa': ['akpakpa.bj', 'cs-akpakpa.org']
+}
+
 export default function MedecinLogin() {
   const navigate = useNavigate()
+  const api = useApi()
   const [formData, setFormData] = useState<MedecinFormData>({
     hopital: '',
     email: '',
@@ -36,6 +48,9 @@ export default function MedecinLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [completionPercentage, setCompletionPercentage] = useState(0)
+  const [authAttempts, setAuthAttempts] = useState(0)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockTimeRemaining, setBlockTimeRemaining] = useState(0)
 
   const steps = ['Hôpital', 'Identifiants', 'Validation']
 
@@ -60,6 +75,23 @@ export default function MedecinLogin() {
     }
   }, [formData])
 
+  // Gestion du blocage temporaire après tentatives échouées
+  useEffect(() => {
+    if (isBlocked && blockTimeRemaining > 0) {
+      const timer = setInterval(() => {
+        setBlockTimeRemaining(prev => {
+          if (prev <= 1) {
+            setIsBlocked(false)
+            setAuthAttempts(0)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+  }, [isBlocked, blockTimeRemaining])
+
   const handleInputChange = (field: keyof MedecinFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
@@ -68,16 +100,35 @@ export default function MedecinLogin() {
     }
   }
 
+  const validateEmailDomain = (email: string, hopital: string): boolean => {
+    if (!hopital || !email) return false
+    const domains = emailDomains[hopital]
+    if (!domains) return false
+
+    const emailDomain = email.split('@')[1]?.toLowerCase()
+    return domains.some(domain => emailDomain === domain.toLowerCase())
+  }
+
   const validateForm = (): boolean => {
     const newErrors: Partial<MedecinFormData> = {}
 
-    if (!formData.hopital) newErrors.hopital = 'Veuillez sélectionner un hôpital'
-    if (!formData.email.trim()) newErrors.email = 'L\'email est requis'
-    if (!formData.password) newErrors.password = 'Le mot de passe est requis'
+    if (!formData.hopital) {
+      newErrors.hopital = 'Veuillez sélectionner votre hôpital'
+    }
 
-    // Validation email
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email professionnel requis'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Format email invalide'
+    } else if (!validateEmailDomain(formData.email, formData.hopital)) {
+      const domains = emailDomains[formData.hopital]
+      newErrors.email = `Email professionnel requis (${domains?.join(', ') || 'domaine officiel'})`
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Mot de passe requis'
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Mot de passe trop court (min. 8 caractères)'
     }
 
     setErrors(newErrors)
@@ -86,29 +137,64 @@ export default function MedecinLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    // Vérifier si l'utilisateur est bloqué
+    if (isBlocked) {
+      setErrors({ email: `Trop de tentatives. Réessayez dans ${blockTimeRemaining}s` })
+      return
+    }
+
     if (!validateForm()) return
 
     setIsSubmitting(true)
-    
+
     try {
-      // Simulation de l'authentification
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Redirection vers le dashboard médecin
-      navigate('/medecin/dashboard', { 
-        state: { 
-          medecinData: {
-            email: formData.email,
-            hopital: formData.hopital,
-            nom: 'Dr. ADJAHOUI',
-            specialite: 'Médecine Générale'
-          }
-        } 
+      // Appel API d'authentification
+      const response = await api.loginMedecin({
+        email: formData.email,
+        password: formData.password,
+        hopitalCode: formData.hopital
       })
+
+      if (response.success && response.data) {
+        // Réinitialiser les tentatives en cas de succès
+        setAuthAttempts(0)
+
+        // Stocker le token et les données médecin
+        if (formData.rememberMe) {
+          localStorage.setItem('medecin_token', response.data.token)
+          localStorage.setItem('medecin_data', JSON.stringify(response.data.medecin))
+        } else {
+          sessionStorage.setItem('medecin_token', response.data.token)
+          sessionStorage.setItem('medecin_data', JSON.stringify(response.data.medecin))
+        }
+
+        // Redirection vers le dashboard médecin
+        navigate('/medecin/dashboard', {
+          state: {
+            medecinData: response.data.medecin,
+            token: response.data.token
+          }
+        })
+      } else {
+        throw new Error(response.error || 'Authentification échouée')
+      }
     } catch (error) {
       console.error('Erreur lors de la connexion:', error)
-      setErrors({ email: 'Email ou mot de passe incorrect' })
+
+      // Gestion des tentatives échouées
+      const newAttempts = authAttempts + 1
+      setAuthAttempts(newAttempts)
+
+      if (newAttempts >= 3) {
+        setIsBlocked(true)
+        setBlockTimeRemaining(300) // 5 minutes
+        setErrors({ email: 'Trop de tentatives. Compte bloqué 5 minutes.' })
+      } else {
+        setErrors({
+          email: `Email ou mot de passe incorrect (${newAttempts}/3 tentatives)`
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -186,6 +272,26 @@ export default function MedecinLogin() {
               <div className="text-sm text-gray-600 mb-4">
                 Progression: {Math.round(completionPercentage)}% complété
               </div>
+
+              {/* Indicateurs de sécurité */}
+              {isBlocked && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  <div className="text-red-700">
+                    <p className="font-medium">Compte temporairement bloqué</p>
+                    <p className="text-sm">Réessayez dans {Math.floor(blockTimeRemaining / 60)}:{(blockTimeRemaining % 60).toString().padStart(2, '0')}</p>
+                  </div>
+                </div>
+              )}
+
+              {authAttempts > 0 && !isBlocked && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center space-x-2">
+                  <Shield className="h-5 w-5 text-yellow-500" />
+                  <span className="text-yellow-700">
+                    {authAttempts}/3 tentatives utilisées
+                  </span>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -199,16 +305,28 @@ export default function MedecinLogin() {
                 required
               />
 
-              <Input
-                label="Email professionnel"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="dr.adjahoui@chu-mel.bj"
-                icon={<Mail className="h-4 w-4" />}
-                error={errors.email}
-                required
-              />
+              <div className="relative">
+                <Input
+                  label="Email professionnel"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="dr.adjahoui@chu-mel.bj"
+                  icon={<Mail className="h-4 w-4" />}
+                  error={errors.email}
+                  required
+                />
+                {formData.email && formData.hopital && validateEmailDomain(formData.email, formData.hopital) && (
+                  <div className="absolute right-3 top-8 text-green-500">
+                    <CheckCircle className="h-4 w-4" />
+                  </div>
+                )}
+                {formData.hopital && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    Domaines acceptés: {emailDomains[formData.hopital]?.join(', ')}
+                  </div>
+                )}
+              </div>
 
               <div className="relative">
                 <Input
@@ -248,10 +366,25 @@ export default function MedecinLogin() {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isBlocked || !validateForm()}
               >
-                {isSubmitting ? 'CONNEXION...' : 'SE CONNECTER'}
+                {isSubmitting ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>AUTHENTIFICATION...</span>
+                  </div>
+                ) : isBlocked ? (
+                  `BLOQUÉ (${Math.floor(blockTimeRemaining / 60)}:${(blockTimeRemaining % 60).toString().padStart(2, '0')})`
+                ) : (
+                  'SE CONNECTER'
+                )}
               </Button>
+
+              {/* Indicateur de sécurité */}
+              <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                <Shield className="h-3 w-3" />
+                <span>Connexion sécurisée SSL</span>
+              </div>
             </form>
 
             {/* Séparateur */}

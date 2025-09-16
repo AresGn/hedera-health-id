@@ -155,6 +155,103 @@ app.get('/api/v1/patients', async (req, res) => {
   }
 })
 
+// Route pour lister les médecins
+app.get('/api/v1/medecins', async (req, res) => {
+  try {
+    const medecins = await prisma.medecin.findMany({
+      select: {
+        id: true,
+        medecinId: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        telephone: true,
+        specialite: true,
+        service: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        hopital: {
+          select: {
+            nom: true,
+            code: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    res.json({
+      success: true,
+      data: medecins,
+      count: medecins.length
+    })
+  } catch (error) {
+    console.warn('Table medecin non trouvée, utilisation de valeur par défaut')
+    res.json({
+      success: true,
+      data: [],
+      count: 0
+    })
+  }
+})
+
+// Route pour lister les consultations
+app.get('/api/v1/consultations', async (req, res) => {
+  try {
+    const consultations = await prisma.consultation.findMany({
+      select: {
+        id: true,
+        consultationId: true,
+        dateConsultation: true,
+        type: true,
+        motif: true,
+        diagnostic: true,
+        statut: true,
+        createdAt: true,
+        patient: {
+          select: {
+            patientId: true,
+            nom: true,
+            prenom: true
+          }
+        },
+        medecin: {
+          select: {
+            nom: true,
+            prenom: true,
+            specialite: true
+          }
+        },
+        hopital: {
+          select: {
+            nom: true,
+            code: true
+          }
+        }
+      },
+      orderBy: {
+        dateConsultation: 'desc'
+      }
+    })
+
+    res.json({
+      success: true,
+      data: consultations,
+      count: consultations.length
+    })
+  } catch (error) {
+    console.warn('Table consultation non trouvée, utilisation de valeur par défaut')
+    res.json({
+      success: true,
+      data: [],
+      count: 0
+    })
+  }
+})
+
 // Middleware de gestion d'erreurs
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err)

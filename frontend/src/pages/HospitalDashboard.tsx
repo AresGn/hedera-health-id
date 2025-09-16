@@ -68,7 +68,7 @@ export default function HospitalDashboard() {
     // Liste des URLs à essayer dans l'ordre
     const apiUrls = [
       'https://hedera-health-id-backend.vercel.app/api/v1/statistiques/dashboard',
-      'http://localhost:3003/api/v1/statistiques/dashboard'
+      'http://localhost:3001/api/v1/statistiques/dashboard'
     ]
 
     for (let i = 0; i < apiUrls.length; i++) {
