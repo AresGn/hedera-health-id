@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import { config, validateConfig } from '../src/config/app.config'
 import { connectDatabase } from '../src/config/database.config'
 import prisma from '../src/config/database.config'
+import statistiquesRouter from '../src/routes/statistiques'
 
 // Charger les variables d'environnement
 dotenv.config()
@@ -270,6 +271,9 @@ app.get('/api/v1/consultations', async (req, res) => {
     })
   }
 })
+
+// Routes API
+app.use('/api/v1/statistiques', statistiquesRouter)
 
 // Middleware de gestion d'erreurs
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
