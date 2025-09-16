@@ -368,3 +368,21 @@
 > **Objectif: Application complète, intuitive et accessible pour révolutionner la santé en Afrique !** 🚀
 
 **Contact: Ares - Développeur Full-Stack Lead**
+
+
+🧪 MAINTENANT TESTEZ AVEC LES BONNES DONNÉES:
+✅ Option 1 - CHU-MEL:
+
+Hôpital: CHU-MEL - Cotonou
+Email: j.adjahoui@chu-mel.bj
+Mot de passe: password123
+✅ Option 2 - CNHU-HKM:
+
+Hôpital: CNHU-HKM - Cotonou
+Email: p.sossou@cnhu-hkm.bj
+Mot de passe: password123
+✅ Option 3 - CHU-MEL (Cardiologue):
+
+Hôpital: CHU-MEL - Cotonou
+Email: m.kossou@chu-mel.bj
+Mot de passe: password123

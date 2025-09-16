@@ -148,9 +148,7 @@ export default function MedecinLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Debug: Afficher les données du formulaire
-    console.log('🔍 Données formulaire:', formData)
-    console.log('🔍 Validation email domain:', validateEmailDomain(formData.email, formData.hopital))
+
 
     // Vérifier si l'utilisateur est bloqué
     if (isBlocked) {
@@ -158,12 +156,7 @@ export default function MedecinLogin() {
       return
     }
 
-    const isValid = validateForm()
-    console.log('🔍 Formulaire valide:', isValid)
-    if (!isValid) {
-      console.log('🔍 Erreurs validation:', errors)
-      return
-    }
+    if (!validateForm()) return
 
     setIsSubmitting(true)
 
@@ -175,22 +168,26 @@ export default function MedecinLogin() {
         hopitalCode: formData.hopital
       })
 
-      if (response.success && response.data) {
+      // Double encapsulation : response.data contient la vraie réponse du backend
+      const backendResponse = response.data as any
+
+      if (response.success && backendResponse && backendResponse.success && backendResponse.data) {
         // Réinitialiser les tentatives en cas de succès
         setAuthAttempts(0)
 
         // Stocker le token et les données médecin de manière sécurisée
-        storeMedecinData(response.data.medecin, response.data.token, formData.rememberMe)
+        storeMedecinData(backendResponse.data.medecin, backendResponse.data.token, formData.rememberMe)
 
         // Redirection vers le dashboard médecin
         navigate('/medecin/dashboard', {
           state: {
-            medecinData: response.data.medecin,
-            token: response.data.token
+            medecinData: backendResponse.data.medecin,
+            token: backendResponse.data.token
           }
         })
       } else {
-        throw new Error(response.error || 'Authentification échouée')
+        const errorMessage = backendResponse?.error || response.error || 'Authentification échouée'
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error('Erreur lors de la connexion:', error)

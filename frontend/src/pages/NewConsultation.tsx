@@ -143,6 +143,19 @@ export default function NewConsultation() {
 
     if (patientFromState) {
       setPatientData(patientFromState)
+    } else {
+      // Créer un patient fictif pour les tests
+      setPatientData({
+        id: 'patient-test-001',
+        patientId: 'PAT-001',
+        nom: 'PATIENT',
+        prenom: 'Test',
+        dateNaissance: '1990-01-01',
+        age: 34,
+        allergies: [],
+        maladiesChroniques: [],
+        hopitalPrincipal: 'CHU-MEL'
+      })
     }
 
     if (medecinFromState && medecinFromState.id) {
