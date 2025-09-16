@@ -38,6 +38,11 @@ curl -X POST http://localhost:3001/api/v1/auth/medecin \
   -H "Content-Type: application/json" \
   -d '{"email": "j.adjahoui@chu-mel.bj", "password": "password123", "hopitalCode": "chu-mel"}'
 
+# Test avec Dr. Pierre SOSSOU (CNHU-HKM)
+curl -X POST http://localhost:3001/api/v1/auth/medecin \
+  -H "Content-Type: application/json" \
+  -d '{"email": "p.sossou@cnhu-hkm.bj", "password": "password123", "hopitalCode": "cnhu-hkm"}'
+
 # Réponse attendue: {"success":true,"data":{"token":"...","medecin":{...}}}
 ```
 
@@ -47,8 +52,17 @@ curl -X POST http://localhost:3001/api/v1/auth/medecin \
 **URL:** http://localhost:3000/medecin/login
 
 #### ✅ Tests à effectuer:
+
+**Option 1 - CHU-MEL:**
 1. **Sélection hôpital:** CHU-MEL - Cotonou
 2. **Email valide:** j.adjahoui@chu-mel.bj
+3. **Mot de passe:** password123
+4. **Validation domaine:** Vérifier que l'icône verte apparaît
+5. **Connexion:** Cliquer "SE CONNECTER"
+
+**Option 2 - CNHU-HKM:**
+1. **Sélection hôpital:** CNHU-HKM - Cotonou
+2. **Email valide:** p.sossou@cnhu-hkm.bj
 3. **Mot de passe:** password123
 4. **Validation domaine:** Vérifier que l'icône verte apparaît
 5. **Connexion:** Cliquer "SE CONNECTER"
@@ -57,10 +71,12 @@ curl -X POST http://localhost:3001/api/v1/auth/medecin \
 - Redirection vers `/medecin/dashboard`
 - Aucune erreur de re-renders infinis
 - Token stocké dans localStorage/sessionStorage
+- Console affiche les logs de débogage
 
-#### 🔍 Autres médecins de test:
-- **Dr. Marie KOSSOU (Cardiologie):** m.kossou@chu-mel.bj
-- **Dr. Pierre SOSSOU (Pédiatrie):** p.sossou@cnhu-hkm.bj
+#### 🔍 Tous les médecins de test:
+- **Dr. Jean ADJAHOUI (Médecine Générale):** j.adjahoui@chu-mel.bj - CHU-MEL
+- **Dr. Marie KOSSOU (Cardiologie):** m.kossou@chu-mel.bj - CHU-MEL
+- **Dr. Pierre SOSSOU (Pédiatrie):** p.sossou@cnhu-hkm.bj - CNHU-HKM
 
 ### 2. 📊 Dashboard Médecin
 **URL:** http://localhost:3000/medecin/dashboard

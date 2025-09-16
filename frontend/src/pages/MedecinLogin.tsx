@@ -21,7 +21,7 @@ interface MedecinFormData {
 
 const hopitauxOptions = [
   { value: 'chu-mel', label: 'CHU-MEL - Cotonou' },
-  { value: 'cnhu', label: 'CNHU - Cotonou' },
+  { value: 'cnhu-hkm', label: 'CNHU-HKM - Cotonou' },
   { value: 'pasteur', label: 'Clinique Louis Pasteur' },
   { value: 'akpakpa', label: 'Centre de Santé Akpakpa' },
 ]
@@ -29,7 +29,7 @@ const hopitauxOptions = [
 // Validation des emails professionnels par hôpital
 const emailDomains: Record<string, string[]> = {
   'chu-mel': ['chu-mel.bj', 'chumel.org'],
-  'cnhu': ['cnhu.bj', 'cnhu-hkm.org'],
+  'cnhu-hkm': ['cnhu-hkm.bj', 'cnhu.bj'],
   'pasteur': ['pasteur.bj', 'clinique-pasteur.com'],
   'akpakpa': ['akpakpa.bj', 'cs-akpakpa.org']
 }
@@ -148,13 +148,22 @@ export default function MedecinLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Debug: Afficher les données du formulaire
+    console.log('🔍 Données formulaire:', formData)
+    console.log('🔍 Validation email domain:', validateEmailDomain(formData.email, formData.hopital))
+
     // Vérifier si l'utilisateur est bloqué
     if (isBlocked) {
       setErrors({ email: `Trop de tentatives. Réessayez dans ${blockTimeRemaining}s` })
       return
     }
 
-    if (!validateForm()) return
+    const isValid = validateForm()
+    console.log('🔍 Formulaire valide:', isValid)
+    if (!isValid) {
+      console.log('🔍 Erreurs validation:', errors)
+      return
+    }
 
     setIsSubmitting(true)
 
