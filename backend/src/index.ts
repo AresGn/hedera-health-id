@@ -24,7 +24,6 @@ const allowedOrigins = [
   'http://localhost:3002',
   'http://localhost:5173',
   'https://hedera-health-id.vercel.app',
-  'https://hedera-health-id-frontend.vercel.app',
   config.CORS_ORIGIN
 ].filter(Boolean)
 

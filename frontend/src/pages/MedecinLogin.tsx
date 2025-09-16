@@ -51,6 +51,7 @@ export default function MedecinLogin() {
   const [authAttempts, setAuthAttempts] = useState(0)
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockTimeRemaining, setBlockTimeRemaining] = useState(0)
+  const [isFormValid, setIsFormValid] = useState(false)
 
   const steps = ['Hôpital', 'Identifiants', 'Validation']
 
@@ -73,6 +74,14 @@ export default function MedecinLogin() {
     } else {
       setCurrentStep(1) // Hôpital
     }
+
+    // Validation du formulaire
+    const isValid = formData.hopital.trim() !== '' &&
+                   formData.email.trim() !== '' &&
+                   formData.password.length >= 8 &&
+                   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
+                   validateEmailDomain(formData.email, formData.hopital)
+    setIsFormValid(isValid)
   }, [formData])
 
   // Gestion du blocage temporaire après tentatives échouées
@@ -366,7 +375,7 @@ export default function MedecinLogin() {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                disabled={isSubmitting || isBlocked || !validateForm()}
+                disabled={isSubmitting || isBlocked || !isFormValid}
               >
                 {isSubmitting ? (
                   <div className="flex items-center space-x-2">
