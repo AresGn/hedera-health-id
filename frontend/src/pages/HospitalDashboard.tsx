@@ -65,67 +65,61 @@ export default function HospitalDashboard() {
     setIsLoading(true)
     setError('')
 
-    // Liste des URLs à essayer dans l'ordre
-    const apiUrls = [
-      'https://hedera-health-id-backend.vercel.app/api/v1/statistiques/dashboard',
-      'http://localhost:3001/api/v1/statistiques/dashboard'
-    ]
+    // Utiliser l'API service configuré
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const url = `${API_URL}/api/v1/statistiques/dashboard`
 
-    for (let i = 0; i < apiUrls.length; i++) {
-      const url = apiUrls[i]
-      console.log(`🔄 Tentative ${i + 1}/${apiUrls.length}: ${url}`)
+    console.log(`🔄 Chargement des données depuis: ${url}`)
 
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          // Timeout de 10 secondes
-          signal: AbortSignal.timeout(10000)
-        })
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'omit',
+        // Timeout de 10 secondes
+        signal: AbortSignal.timeout(10000)
+      })
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
+      console.log(`📡 Response status: ${response.status}`)
 
-        const data = await response.json()
-
-        if (data.success) {
-          console.log('✅ Données chargées avec succès depuis:', url)
-          setStats(data.data.statistiques)
-          setActivites(data.data.activitesRecentes)
-          setError('') // Effacer toute erreur précédente
-          setIsLoading(false)
-          return // Succès, on sort de la fonction
-        } else {
-          throw new Error(data.error || 'Erreur lors du chargement des données')
-        }
-      } catch (err) {
-        console.warn(`❌ Échec avec ${url}:`, err)
-
-        // Si c'est la dernière URL, on affiche l'erreur
-        if (i === apiUrls.length - 1) {
-          console.error('❌ Toutes les tentatives ont échoué')
-          setError(`Impossible de charger les données du dashboard. Dernière erreur: ${err instanceof Error ? err.message : 'Erreur inconnue'}`)
-
-          // Données par défaut en cas d'erreur
-          setStats({
-            patients: { actifs: 0, croissance: '+0%' },
-            consultations: { total: 0, croissance: '+0%' },
-            economies: { montant: 0, unite: 'M FCFA' },
-            temps: { economise: 0, unite: 'heures' },
-            adoption: {
-              systeme: 0,
-              medecinsActifs: 0,
-              patientsInscrits: 0,
-              satisfaction: 0
-            }
-          })
-          setActivites([])
-        }
-        // Sinon, on continue avec l'URL suivante
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`❌ HTTP Error ${response.status}:`, errorText)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      console.log('✅ Données reçues:', data)
+
+      if (data.success) {
+        console.log('✅ Données chargées avec succès depuis:', url)
+        setStats(data.data.statistiques)
+        setActivites(data.data.activitesRecentes)
+        setError('') // Effacer toute erreur précédente
+      } else {
+        throw new Error(data.error || 'Erreur lors du chargement des données')
+      }
+    } catch (err) {
+      console.error('❌ Erreur lors du chargement des données:', err)
+      setError(`Impossible de charger les données du dashboard: ${err instanceof Error ? err.message : 'Erreur inconnue'}`)
+
+      // Données par défaut en cas d'erreur
+      setStats({
+        patients: { actifs: 0, croissance: '+0%' },
+        consultations: { total: 0, croissance: '+0%' },
+        economies: { montant: 0, unite: 'M FCFA' },
+        temps: { economise: 0, unite: 'heures' },
+        adoption: {
+          systeme: 0,
+          medecinsActifs: 0,
+          patientsInscrits: 0,
+          satisfaction: 0
+        }
+      })
+      setActivites([])
     }
 
     setIsLoading(false)

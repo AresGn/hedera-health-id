@@ -20,25 +20,44 @@ app.use(helmet())
 // Configuration CORS pour accepter plusieurs origines
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3002',
   'http://localhost:5173',
   'https://hedera-health-id.vercel.app',
+  'https://hedera-health-id-backend.vercel.app',
   config.CORS_ORIGIN
 ].filter(Boolean)
 
+console.log('🔒 CORS Allowed Origins:', allowedOrigins)
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Autoriser les requêtes sans origine (ex: applications mobiles, Postman)
-    if (!origin) return callback(null, true)
+    console.log(`🔍 CORS Check - Origin: ${origin}`)
 
-    if (allowedOrigins.includes(origin)) {
+    // Autoriser les requêtes sans origine (ex: applications mobiles, Postman)
+    if (!origin) {
+      console.log('✅ CORS: No origin - allowing')
       return callback(null, true)
     }
 
+    // En développement, autoriser localhost sur tous les ports
+    if (config.NODE_ENV === 'development' && origin?.includes('localhost')) {
+      console.log('✅ CORS: Development localhost - allowing')
+      return callback(null, true)
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS: Origin allowed')
+      return callback(null, true)
+    }
+
+    console.log(`❌ CORS: Origin ${origin} not allowed. Allowed origins:`, allowedOrigins)
     return callback(new Error('Non autorisé par CORS'), false)
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }))
 
 // Middlewares de parsing

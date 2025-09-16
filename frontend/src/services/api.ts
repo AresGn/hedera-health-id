@@ -1,5 +1,8 @@
 // Configuration API pour communiquer avec le backend
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+// Log de l'URL utilisée pour debug
+console.log('🔗 API Base URL:', API_BASE_URL)
 
 interface ApiResponse<T> {
   success: boolean
@@ -61,30 +64,39 @@ class ApiService {
 
   // Méthode générique pour les requêtes
   private async request<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseUrl}${endpoint}`
+    console.log(`🔄 API Request: ${options.method || 'GET'} ${url}`)
+
     try {
-      const url = `${this.baseUrl}${endpoint}`
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
         },
+        mode: 'cors',
+        credentials: 'omit',
         ...options,
       })
 
+      console.log(`📡 Response status: ${response.status} for ${url}`)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`❌ HTTP Error ${response.status}:`, errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log(`✅ Success for ${url}:`, data)
       return {
         success: true,
         data
       }
     } catch (error) {
-      console.error('API Error:', error)
+      console.error(`❌ API Error for ${url}:`, error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
