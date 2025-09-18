@@ -272,6 +272,91 @@ app.get('/api/v1/consultations', async (req, res) => {
   }
 })
 
+// Route d'authentification médecin
+app.post('/api/v1/auth/medecin', async (req, res) => {
+  try {
+    const { email, password, hopitalCode } = req.body
+
+    // Validation des données
+    if (!email || !password || !hopitalCode) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email, mot de passe et code hôpital requis'
+      })
+    }
+
+    // Recherche du médecin
+    const medecin = await prisma.medecin.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        hopital: {
+          code: hopitalCode
+        },
+        isActive: true
+      },
+      include: {
+        hopital: {
+          select: {
+            nom: true,
+            code: true
+          }
+        }
+      }
+    })
+
+    if (!medecin) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // En production, vérifier le hash du mot de passe avec bcrypt
+    // Pour la démo, on accepte tous les mots de passe
+    const isPasswordValid = true // await bcrypt.compare(password, medecin.passwordHash)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Mise à jour de la dernière connexion
+    await prisma.medecin.update({
+      where: { id: medecin.id },
+      data: { lastLogin: new Date() }
+    })
+
+    // Génération du token JWT (simulation)
+    const token = `jwt_token_${medecin.id}_${Date.now()}`
+
+    return res.json({
+      success: true,
+      data: {
+        token,
+        medecin: {
+          id: medecin.id,
+          medecinId: medecin.medecinId,
+          nom: medecin.nom,
+          prenom: medecin.prenom,
+          email: medecin.email,
+          specialite: medecin.specialite,
+          service: medecin.service,
+          hopital: medecin.hopital,
+          lastLogin: medecin.lastLogin
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Erreur authentification médecin:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur serveur lors de l\'authentification'
+    })
+  }
+})
+
 // Routes API
 app.use('/api/v1/statistiques', statistiquesRouter)
 
