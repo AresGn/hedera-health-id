@@ -109,12 +109,12 @@ export default function HomePage() {
                 <Globe className="h-12 w-12 text-medical-500 mb-2" />
                 <span className="text-sm font-medium">• Web</span>
               </div>
-              <div className="flex flex-col items-center">
-                <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <Hash className="h-6 w-6 text-gray-600" />
+              <Link to="/ussd" className="flex flex-col items-center hover:scale-105 transition-transform">
+                <div className="h-12 w-12 bg-gray-200 hover:bg-hedera-100 rounded-lg flex items-center justify-center mb-2 transition-colors">
+                  <Hash className="h-6 w-6 text-gray-600 hover:text-hedera-600" />
                 </div>
                 <span className="text-sm font-medium">• USSD</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -125,9 +125,11 @@ export default function HomePage() {
             <Button variant="primary" size="lg">
               EN SAVOIR PLUS
             </Button>
-            <Button variant="secondary" size="lg">
-              DÉMO
-            </Button>
+            <Link to="/ussd">
+              <Button variant="secondary" size="lg">
+                TESTER USSD
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
