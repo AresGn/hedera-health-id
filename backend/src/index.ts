@@ -6,6 +6,7 @@ import { config, validateConfig } from './config/app.config'
 import { connectDatabase, disconnectDatabase } from './config/database.config'
 import prisma from './config/database.config'
 import statistiquesRouter from './routes/statistiques'
+import blockchainRouter from './routes/blockchain'
 
 // Charger les variables d'environnement
 dotenv.config()
@@ -359,6 +360,9 @@ app.post('/api/v1/auth/medecin', async (req, res) => {
 
 // Routes API
 app.use('/api/v1/statistiques', statistiquesRouter)
+
+// Routes Blockchain Hedera
+app.use('/api/hedera', blockchainRouter)
 
 // Middleware de gestion d'erreurs
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
