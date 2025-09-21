@@ -361,12 +361,13 @@ app.post('/api/v1/auth/medecin', async (req, res) => {
 // Routes API
 app.use('/api/v1/statistiques', statistiquesRouter)
 
-// Routes Hedera simplifiées pour les tests
+// Routes Hedera simplifiées pour les tests - v2
 app.get('/api/hedera/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Service Hedera opérationnel',
-    timestamp: new Date().toISOString()
+    message: 'Service Hedera opérationnel - v2',
+    timestamp: new Date().toISOString(),
+    version: '2.0'
   });
 });
 
