@@ -12,7 +12,7 @@ export default function PatientOverview({ patientData, consultations, medecinsAu
   if (!patientData) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <p className="text-gray-500">Chargement des données patient...</p>
+        <p className="text-gray-600">Chargement des données patient...</p>
       </div>
     )
   }
@@ -41,20 +41,20 @@ export default function PatientOverview({ patientData, consultations, medecinsAu
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="text-sm font-medium text-gray-500">ID Patient</label>
+            <label className="text-sm font-medium text-gray-600">ID Patient</label>
             <p className="text-lg font-mono font-bold text-hedera-600">{patientData.patientId}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Nom complet</label>
-            <p className="text-lg font-semibold">{patientData.prenom} {patientData.nom}</p>
+            <label className="text-sm font-medium text-gray-600">Nom complet</label>
+            <p className="text-lg font-semibold text-gray-900">{patientData.prenom} {patientData.nom}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Date de naissance</label>
-            <p className="text-lg">{new Date(patientData.dateNaissance).toLocaleDateString('fr-FR')}</p>
+            <label className="text-sm font-medium text-gray-600">Date de naissance</label>
+            <p className="text-lg text-gray-900">{new Date(patientData.dateNaissance).toLocaleDateString('fr-FR')}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">Hôpital principal</label>
-            <p className="text-lg">{patientData.hopitalPrincipal === 'chu-mel' ? 'CHU-MEL' : patientData.hopitalPrincipal}</p>
+            <label className="text-sm font-medium text-gray-600">Hôpital principal</label>
+            <p className="text-lg text-gray-900">{patientData.hopitalPrincipal === 'chu-mel' ? 'CHU-MEL' : patientData.hopitalPrincipal}</p>
           </div>
         </div>
 
@@ -120,13 +120,13 @@ export default function PatientOverview({ patientData, consultations, medecinsAu
               .slice(0, 2)
               .map((consultation) => (
                 <div key={consultation.id} className="border-l-4 border-blue-500 pl-3">
-                  <p className="font-medium text-sm">{consultation.medecin}</p>
-                  <p className="text-xs text-gray-500">{consultation.type}</p>
+                  <p className="font-medium text-sm text-gray-900">{consultation.medecin}</p>
+                  <p className="text-xs text-gray-600">{consultation.type}</p>
                   <p className="text-xs text-blue-600">{new Date(consultation.date).toLocaleDateString('fr-FR')}</p>
                 </div>
               ))}
             {consultations.filter(c => c.statut === 'programmee').length === 0 && (
-              <p className="text-sm text-gray-500">Aucun RDV programmé</p>
+              <p className="text-sm text-gray-600">Aucun RDV programmé</p>
             )}
           </div>
         </div>

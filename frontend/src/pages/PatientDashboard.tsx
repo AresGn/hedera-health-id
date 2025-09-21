@@ -9,13 +9,13 @@ import PatientSettings from '@/components/patient/PatientSettings'
 import PatientDocuments from '@/components/patient/PatientDocuments'
 import { PatientData, Consultation, MedecinAutorise, DashboardTab } from '@/types/patient'
 import { useSession } from '@/components/ProtectedRoute'
-// import { useApi } from '@/services/api'
+import { useApi } from '@/services/api'
 
 export default function PatientDashboard() {
   // const location = useLocation()
   // const navigate = useNavigate()
   const { sessionData, logout } = useSession('patient')
-  // const api = useApi()
+  const api = useApi()
 
   const [patientData, setPatientData] = useState<PatientData | null>(null)
   const [consultations, setConsultations] = useState<Consultation[]>([])
@@ -35,46 +35,39 @@ export default function PatientDashboard() {
     setError('')
 
     try {
-      // Créer les données du patient basées sur l'ID de session
-      const mockPatientData: PatientData = {
-        patientId: patientId,
-        nom: patientId.includes('KOSSOU') ? 'KOSSOU' : 'PATIENT',
-        prenom: patientId.includes('KOSSOU') ? 'Adjoa' : 'Utilisateur',
-        dateNaissance: '1990-05-12',
-        telephone: '+229 97 XX XX XX',
-        email: 'patient@example.com',
-        hopitalPrincipal: 'CHU-MEL'
+      // Récupérer les données du patient depuis l'API
+      const patientResponse = await api.getPatientById(patientId)
+
+      if (!patientResponse.success || !patientResponse.data) {
+        throw new Error('Patient non trouvé')
       }
 
-      // Consultations fictives (en attendant l'API)
-      const demoConsultations: Consultation[] = [
-        {
-          id: '1',
-          date: '2025-01-02',
-          medecin: 'Dr. ADJAHOUI',
-          hopital: 'CHU-MEL',
-          type: 'Consultation générale',
-          statut: 'terminee',
-          resume: 'Contrôle de routine. État général satisfaisant.'
-        },
-        {
-          id: '2',
-          date: '2025-01-15',
-          medecin: 'Dr. KOSSOU',
-          hopital: 'CHU-MEL',
-          type: 'Suivi cardiologique',
-          statut: 'programmee'
-        },
-        {
-          id: '3',
-          date: '2024-12-20',
-          medecin: 'Dr. SOGLO',
-          hopital: 'CNHU',
-          type: 'Urgences',
-          statut: 'terminee',
-          resume: 'Traitement pour infection respiratoire. Guérison complète.'
-        }
-      ]
+      const patient = patientResponse.data
+      const patientData: PatientData = {
+        patientId: patient.patientId,
+        nom: patient.nom,
+        prenom: patient.prenom,
+        dateNaissance: new Date(patient.dateNaissance).toLocaleDateString('fr-FR'),
+        telephone: patient.telephone,
+        email: patient.email || 'Non renseigné',
+        hopitalPrincipal: patient.hopitalPrincipal || 'Non renseigné'
+      }
+
+      // Récupérer les consultations du patient
+      const consultationsResponse = await api.getPatientConsultations(patientId)
+
+      let consultations: Consultation[] = []
+      if (consultationsResponse.success && consultationsResponse.data) {
+        consultations = consultationsResponse.data.map((consultation: any) => ({
+          id: consultation.id,
+          date: new Date(consultation.dateConsultation).toLocaleDateString('fr-FR'),
+          medecin: `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}`,
+          hopital: consultation.hopital.nom,
+          type: consultation.type,
+          statut: consultation.statut.toLowerCase(),
+          resume: consultation.notes || consultation.diagnostic || 'Consultation en cours'
+        }))
+      }
 
       // Médecins autorisés fictifs (en attendant l'API)
       const demoMedecins: MedecinAutorise[] = [
@@ -98,13 +91,27 @@ export default function PatientDashboard() {
         }
       ]
 
-      setPatientData(mockPatientData)
-      setConsultations(demoConsultations)
+      setPatientData(patientData)
+      setConsultations(consultations)
       setMedecinsAutorises(demoMedecins)
 
     } catch (err) {
-      setError('Erreur lors du chargement des données patient')
-      console.error('Erreur chargement patient:', err)
+      console.error('Erreur chargement données patient:', err)
+      setError('Impossible de charger les données du patient')
+
+      // Fallback vers des données par défaut en cas d'erreur
+      const fallbackPatientData: PatientData = {
+        patientId: patientId,
+        nom: 'PATIENT',
+        prenom: 'Utilisateur',
+        dateNaissance: '01/01/1990',
+        telephone: '+229 XX XX XX XX',
+        email: 'Non renseigné',
+        hopitalPrincipal: 'Non renseigné'
+      }
+      setPatientData(fallbackPatientData)
+      setConsultations([])
+      setMedecinsAutorises([])
     } finally {
       setIsLoading(false)
     }

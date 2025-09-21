@@ -12,6 +12,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "db:setup": "node scripts/setup-database.js",
+    "db:ensure": "node scripts/ensure-database-setup.js",
     "db:test": "node scripts/test-connection.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

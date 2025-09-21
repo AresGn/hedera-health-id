@@ -10,8 +10,8 @@ interface Patient {
   nom: string
   prenom: string
   telephone: string
-  ville: string
-  hopitalPrincipal: string
+  ville?: string
+  hopitalPrincipal?: string
   isActive: boolean
   createdAt: string
 }

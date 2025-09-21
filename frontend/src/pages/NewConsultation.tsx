@@ -449,7 +449,7 @@ export default function NewConsultation() {
               </div>
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-800 mb-2">
                   Notes complémentaires
                 </label>
                 <textarea
@@ -457,7 +457,7 @@ export default function NewConsultation() {
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder="Notes additionnelles, observations..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -591,13 +591,13 @@ export default function NewConsultation() {
                 <div className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-800 mb-1">
                         Médicament
                       </label>
                       <select
                         value={currentMedicament.nom}
                         onChange={(e) => setCurrentMedicament(prev => ({ ...prev, nom: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500 text-gray-900"
                       >
                         <option value="">Sélectionner ou taper</option>
                         {medicamentsCommuns.map((med) => (

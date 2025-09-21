@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Stethoscope, Users, Calendar, Clock, Activity,
   Search, Plus, Bell, LogOut, Camera,
-  AlertTriangle, BarChart3, User, Heart
+  AlertTriangle, BarChart3, User, Heart, Menu, X
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import QRScanner from '@/components/QRScanner'
@@ -56,6 +56,7 @@ export default function MedecinDashboardNew() {
   const [medecinData, setMedecinData] = useState<MedecinData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showQRScanner, setShowQRScanner] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
 
   // Données fictives enrichies
@@ -188,6 +189,11 @@ export default function MedecinDashboardNew() {
     navigate('/medecin/login')
   }
 
+  const handleNavClick = () => {
+    // Fermer la sidebar sur mobile après navigation
+    setSidebarOpen(false)
+  }
+
   const handleQRScanSuccess = (patientData: PatientQRData) => {
     setShowQRScanner(false)
     navigate('/medecin/patient', {
@@ -238,11 +244,32 @@ export default function MedecinDashboardNew() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <Stethoscope className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">Hedera Health</h1>
+              <p className="text-xs text-gray-500">Dr. {medecinData?.prenom} {medecinData?.nom}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+      </div>
+
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
-        {/* Logo/Header */}
-        <div className="p-6 border-b border-gray-200">
+      <div className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 bg-white shadow-lg border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col lg:min-h-screen`}>
+        {/* Logo/Header - Hidden on mobile */}
+        <div className="hidden lg:block p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-600 p-2 rounded-lg">
               <Stethoscope className="h-6 w-6 text-white" />
@@ -286,8 +313,9 @@ export default function MedecinDashboardNew() {
               <span>Dashboard</span>
             </button>
             
-            <Link 
+            <Link
               to="/medecin/consultation/new"
+              onClick={handleNavClick}
               className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               <Plus className="h-4 w-4" />
@@ -315,8 +343,11 @@ export default function MedecinDashboardNew() {
               Outils
             </h3>
             
-            <button 
-              onClick={() => setShowQRScanner(!showQRScanner)}
+            <button
+              onClick={() => {
+                setShowQRScanner(!showQRScanner)
+                handleNavClick()
+              }}
               className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               <Camera className="h-4 w-4" />
@@ -374,9 +405,9 @@ export default function MedecinDashboardNew() {
         </header>
 
         {/* Main Dashboard Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
             {stats.map((stat, index) => (
               <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between">

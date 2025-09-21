@@ -48,11 +48,18 @@ interface Patient {
   patientId: string
   nom: string
   prenom: string
+  dateNaissance: string
   telephone: string
-  ville: string
-  hopitalPrincipal: string
+  email?: string
+  ville?: string
+  hopitalPrincipal?: string
+  groupeSanguin?: string
+  allergies?: string[]
+  maladiesChroniques?: string[]
+  contactUrgence?: string
   isActive: boolean
   createdAt: string
+  lastLogin?: string
 }
 
 class ApiService {
@@ -161,6 +168,24 @@ class ApiService {
     return this.request<any[]>('/api/v1/consultations')
   }
 
+  // Récupérer les données d'un patient spécifique
+  async getPatientById(patientId: string): Promise<ApiResponse<Patient>> {
+    return this.request<Patient>(`/api/v1/patients/${patientId}`)
+  }
+
+  // Récupérer les consultations d'un patient
+  async getPatientConsultations(patientId: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/api/v1/patients/${patientId}/consultations`)
+  }
+
+  // Créer une nouvelle consultation
+  async createConsultation(consultationData: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/consultations', {
+      method: 'POST',
+      body: JSON.stringify(consultationData)
+    })
+  }
+
   // Vérifier la connectivité
   async checkConnectivity(): Promise<boolean> {
     try {
@@ -184,6 +209,9 @@ export function useApi() {
     getPatients: () => apiService.getPatients(),
     getMedecins: () => apiService.getMedecins(),
     getConsultations: () => apiService.getConsultations(),
+    getPatientById: (patientId: string) => apiService.getPatientById(patientId),
+    getPatientConsultations: (patientId: string) => apiService.getPatientConsultations(patientId),
+    createConsultation: (data: any) => apiService.createConsultation(data),
     createPatient: (data: Parameters<typeof apiService.createPatient>[0]) =>
       apiService.createPatient(data),
     loginMedecin: (credentials: Parameters<typeof apiService.loginMedecin>[0]) =>
