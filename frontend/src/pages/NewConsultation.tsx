@@ -8,6 +8,7 @@ import {
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { getMedecinData } from '@/utils/storage'
+import { useApi } from '@/services/api'
 
 
 interface PatientData {
@@ -100,6 +101,7 @@ const medicamentsCommuns = [
 export default function NewConsultation() {
   const location = useLocation()
   const navigate = useNavigate()
+  const api = useApi()
   
   const [patientData, setPatientData] = useState<PatientData | null>(null)
   const [medecinData, setMedecinData] = useState<MedecinData | null>(null)
@@ -258,32 +260,46 @@ export default function NewConsultation() {
     setIsSubmitting(true)
     
     try {
-      // Préparer les données de consultation
+      // Préparer les données de consultation pour l'API
       const consultationData = {
-        ...formData,
-        statut,
         patientId: patientData?.id,
         medecinId: medecinData?.id,
         hopitalId: medecinData?.hopital.code,
-        dateConsultation: new Date().toISOString()
+        type: formData.type,
+        motif: formData.motif,
+        diagnostic: formData.diagnostic,
+        prescription: formData.prescription,
+        examensPrescrits: formData.examensPrescrits,
+        poids: formData.donneesVitales.poids,
+        taille: formData.donneesVitales.taille,
+        tensionArterielle: formData.donneesVitales.tensionArterielle,
+        temperature: formData.donneesVitales.temperature,
+        pouls: formData.donneesVitales.pouls,
+        notes: formData.notes,
+        statut: statut === 'terminee' ? 'TERMINEE' : 'EN_COURS'
       }
 
-      // Simulation de l'envoi - en production, appeler l'API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Simulation de la sauvegarde blockchain
-      console.log('Consultation sauvegardée:', consultationData)
-      
-      // Redirection vers le dossier patient
-      navigate('/medecin/patient', {
+      console.log('🔄 Envoi consultation vers API:', consultationData)
+
+      // Appel API réel
+      const response = await api.createConsultation(consultationData)
+
+      if (!response.success) {
+        throw new Error(response.error || 'Erreur lors de la création de la consultation')
+      }
+
+      console.log('✅ Consultation créée avec succès:', response.data)
+
+      // Redirection vers le dashboard médecin
+      navigate('/medecin/dashboard', {
         state: {
-          patientData,
-          message: `Consultation ${statut === 'terminee' ? 'terminée' : 'sauvegardée'} avec succès`
+          message: `Consultation ${statut === 'terminee' ? 'terminée' : 'sauvegardée'} avec succès`,
+          consultationId: response.data?.consultationId
         }
       })
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error)
-      setErrors({ submit: 'Erreur lors de la sauvegarde de la consultation' })
+      console.error('❌ Erreur lors de la sauvegarde:', error)
+      setErrors({ submit: `Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : 'Erreur inconnue'}` })
     } finally {
       setIsSubmitting(false)
     }
@@ -457,7 +473,7 @@ export default function NewConsultation() {
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder="Notes additionnelles, observations..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500 text-gray-900 placeholder:text-gray-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500 text-gray-900 placeholder:text-gray-600"
                 />
               </div>
             </div>
@@ -745,7 +761,7 @@ export default function NewConsultation() {
                       disabled={formData.examensPrescrits.includes(examen)}
                       className={`text-left px-2 py-1 rounded text-sm transition-colors ${
                         formData.examensPrescrits.includes(examen)
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                           : 'hover:bg-blue-50 text-blue-600 hover:text-blue-800'
                       }`}
                     >

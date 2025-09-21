@@ -291,6 +291,70 @@ app.get('/api/v1/patients/:patientId/consultations', async (req, res) => {
   }
 })
 
+// Route pour créer un nouveau patient
+app.post('/api/v1/patients', async (req, res) => {
+  try {
+    const {
+      patientId,
+      nom,
+      prenom,
+      dateNaissance,
+      telephone,
+      email,
+      ville,
+      hopitalPrincipal,
+      groupeSanguin,
+      allergies,
+      maladiesChroniques,
+      contactUrgence
+    } = req.body
+
+    // Vérifier si le patient existe déjà
+    const existingPatient = await prisma.patient.findUnique({
+      where: { patientId }
+    })
+
+    if (existingPatient) {
+      return res.status(409).json({
+        success: false,
+        error: 'Patient already exists',
+        message: `Patient avec l'ID ${patientId} existe déjà`
+      })
+    }
+
+    const patient = await prisma.patient.create({
+      data: {
+        patientId,
+        nom,
+        prenom,
+        dateNaissance: new Date(dateNaissance),
+        telephone,
+        email,
+        ville,
+        hopitalPrincipal,
+        groupeSanguin,
+        allergies: allergies || [],
+        maladiesChroniques: maladiesChroniques || [],
+        contactUrgence,
+        passwordHash: 'temp_hash_' + Date.now(), // Hash temporaire
+        isActive: true
+      }
+    })
+
+    return res.status(201).json({
+      success: true,
+      data: patient,
+      message: 'Patient créé avec succès'
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create patient',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
 // Route pour créer une nouvelle consultation
 app.post('/api/v1/consultations', async (req, res) => {
   try {
