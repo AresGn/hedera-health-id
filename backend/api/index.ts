@@ -361,8 +361,22 @@ app.post('/api/v1/auth/medecin', async (req, res) => {
 // Routes API
 app.use('/api/v1/statistiques', statistiquesRouter)
 
-// Routes Blockchain Hedera
-app.use('/api/hedera', blockchainRouter)
+// Route de test Hedera simple
+app.get('/api/hedera/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Routes Hedera fonctionnelles',
+    timestamp: new Date().toISOString(),
+    contracts: {
+      patientIdentity: process.env.PATIENT_IDENTITY_CONTRACT_ID || 'Non configuré',
+      accessControl: process.env.ACCESS_CONTROL_CONTRACT_ID || 'Non configuré',
+      medicalRecords: process.env.MEDICAL_RECORDS_CONTRACT_ID || 'Non configuré'
+    }
+  });
+});
+
+// Routes Blockchain Hedera (commentées temporairement pour debug)
+// app.use('/api/hedera', blockchainRouter)
 
 // Middleware de gestion d'erreurs
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
