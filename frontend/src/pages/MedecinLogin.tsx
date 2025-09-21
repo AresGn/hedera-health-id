@@ -168,25 +168,22 @@ export default function MedecinLogin() {
         hopitalCode: formData.hopital
       })
 
-      // Double encapsulation : response.data contient la vraie réponse du backend
-      const backendResponse = response.data as any
-
-      if (response.success && backendResponse && backendResponse.success && backendResponse.data) {
+      if (response.success && response.data?.medecin) {
         // Réinitialiser les tentatives en cas de succès
         setAuthAttempts(0)
 
         // Stocker le token et les données médecin de manière sécurisée
-        storeMedecinData(backendResponse.data.medecin, backendResponse.data.token, formData.rememberMe)
+        storeMedecinData(response.data.medecin, response.data.token, formData.rememberMe)
 
         // Redirection vers le dashboard médecin
         navigate('/medecin/dashboard', {
           state: {
-            medecinData: backendResponse.data.medecin,
-            token: backendResponse.data.token
+            medecinData: response.data.medecin,
+            token: response.data.token
           }
         })
       } else {
-        const errorMessage = backendResponse?.error || response.error || 'Authentification échouée'
+        const errorMessage = response.error || 'Authentification échouée'
         throw new Error(errorMessage)
       }
     } catch (error) {
