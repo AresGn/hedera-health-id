@@ -471,6 +471,163 @@ app.post('/api/v1/consultations', async (req, res) => {
   }
 })
 
+// Route d'authentification patient
+app.post('/api/v1/auth/patient', async (req, res) => {
+  try {
+    const { patientId, password } = req.body
+
+    // Validation des données
+    if (!patientId || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID patient et mot de passe requis'
+      })
+    }
+
+    // Recherche du patient
+    const patient = await prisma.patient.findUnique({
+      where: {
+        patientId: patientId,
+        isActive: true
+      }
+    })
+
+    if (!patient) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // En production, vérifier le hash du mot de passe avec bcrypt
+    // Pour la démo, on accepte tous les mots de passe
+    const isPasswordValid = true // await bcrypt.compare(password, patient.passwordHash)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Mise à jour de la dernière connexion
+    await prisma.patient.update({
+      where: { id: patient.id },
+      data: { lastLogin: new Date() }
+    })
+
+    // Génération du token JWT (simulation)
+    const token = `jwt_patient_${patient.id}_${Date.now()}`
+
+    return res.json({
+      success: true,
+      data: {
+        token,
+        patient: {
+          id: patient.id,
+          patientId: patient.patientId,
+          nom: patient.nom,
+          prenom: patient.prenom,
+          email: patient.email,
+          telephone: patient.telephone,
+          ville: patient.ville,
+          hopitalPrincipal: patient.hopitalPrincipal,
+          lastLogin: new Date()
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Erreur authentification patient:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur serveur lors de l\'authentification'
+    })
+  }
+})
+
+// Route d'authentification hôpital/admin
+app.post('/api/v1/auth/hospital', async (req, res) => {
+  try {
+    const { adminId, password } = req.body
+
+    // Validation des données
+    if (!adminId || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID admin et mot de passe requis'
+      })
+    }
+
+    // Recherche de l'admin hôpital
+    const admin = await prisma.hospitalAdmin.findUnique({
+      where: {
+        adminId: adminId,
+        isActive: true
+      },
+      include: {
+        hopital: {
+          select: {
+            id: true,
+            nom: true,
+            code: true,
+            ville: true
+          }
+        }
+      }
+    })
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // En production, vérifier le hash du mot de passe avec bcrypt
+    // Pour la démo, on accepte tous les mots de passe
+    const isPasswordValid = true // await bcrypt.compare(password, admin.passwordHash)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Mise à jour de la dernière connexion
+    await prisma.hospitalAdmin.update({
+      where: { id: admin.id },
+      data: { lastLogin: new Date() }
+    })
+
+    // Génération du token JWT (simulation)
+    const token = `jwt_admin_${admin.id}_${Date.now()}`
+
+    return res.json({
+      success: true,
+      data: {
+        token,
+        admin: {
+          id: admin.id,
+          adminId: admin.adminId,
+          nom: admin.nom,
+          prenom: admin.prenom,
+          email: admin.email,
+          role: admin.role,
+          hopital: admin.hopital,
+          lastLogin: new Date()
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Erreur authentification admin hôpital:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur serveur lors de l\'authentification'
+    })
+  }
+})
+
 // Route d'authentification médecin
 app.post('/api/v1/auth/medecin', async (req, res) => {
   try {
