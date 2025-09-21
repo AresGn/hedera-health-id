@@ -176,6 +176,203 @@ app.get('/api/v1/patients', async (req, res) => {
   }
 })
 
+// Route pour récupérer un patient spécifique par patientId
+app.get('/api/v1/patients/:patientId', async (req, res) => {
+  try {
+    const { patientId } = req.params
+
+    const patient = await prisma.patient.findUnique({
+      where: {
+        patientId: patientId
+      },
+      select: {
+        id: true,
+        patientId: true,
+        nom: true,
+        prenom: true,
+        dateNaissance: true,
+        telephone: true,
+        email: true,
+        ville: true,
+        hopitalPrincipal: true,
+        groupeSanguin: true,
+        allergies: true,
+        maladiesChroniques: true,
+        contactUrgence: true,
+        isActive: true,
+        createdAt: true,
+        lastLogin: true
+      }
+    })
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: 'Patient not found',
+        message: `Patient avec l'ID ${patientId} non trouvé`
+      })
+    }
+
+    return res.json({
+      success: true,
+      data: patient
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch patient',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+// Route pour récupérer les consultations d'un patient
+app.get('/api/v1/patients/:patientId/consultations', async (req, res) => {
+  try {
+    const { patientId } = req.params
+
+    // Vérifier que le patient existe
+    const patient = await prisma.patient.findUnique({
+      where: { patientId: patientId }
+    })
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: 'Patient not found',
+        message: `Patient avec l'ID ${patientId} non trouvé`
+      })
+    }
+
+    const consultations = await prisma.consultation.findMany({
+      where: {
+        patientId: patient.id
+      },
+      select: {
+        id: true,
+        consultationId: true,
+        dateConsultation: true,
+        type: true,
+        motif: true,
+        diagnostic: true,
+        statut: true,
+        notes: true,
+        createdAt: true,
+        medecin: {
+          select: {
+            nom: true,
+            prenom: true,
+            specialite: true
+          }
+        },
+        hopital: {
+          select: {
+            nom: true,
+            code: true
+          }
+        }
+      },
+      orderBy: {
+        dateConsultation: 'desc'
+      }
+    })
+
+    return res.json({
+      success: true,
+      data: consultations,
+      count: consultations.length
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch patient consultations',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+// Route pour créer une nouvelle consultation
+app.post('/api/v1/consultations', async (req, res) => {
+  try {
+    const {
+      patientId,
+      medecinId,
+      hopitalId,
+      type,
+      motif,
+      diagnostic,
+      prescription,
+      examensPrescrits,
+      poids,
+      taille,
+      tensionArterielle,
+      temperature,
+      pouls,
+      notes,
+      statut = 'PROGRAMMEE'
+    } = req.body
+
+    // Générer un ID unique pour la consultation
+    const consultationId = `CONS-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+
+    const consultation = await prisma.consultation.create({
+      data: {
+        consultationId,
+        patientId,
+        medecinId,
+        hopitalId,
+        dateConsultation: new Date(),
+        type,
+        motif,
+        diagnostic,
+        prescription,
+        examensPrescrits: examensPrescrits || [],
+        poids: poids ? parseFloat(poids) : null,
+        taille: taille ? parseFloat(taille) : null,
+        tensionArterielle,
+        temperature: temperature ? parseFloat(temperature) : null,
+        pouls: pouls ? parseInt(pouls) : null,
+        statut,
+        notes
+      },
+      include: {
+        patient: {
+          select: {
+            patientId: true,
+            nom: true,
+            prenom: true
+          }
+        },
+        medecin: {
+          select: {
+            nom: true,
+            prenom: true,
+            specialite: true
+          }
+        },
+        hopital: {
+          select: {
+            nom: true,
+            code: true
+          }
+        }
+      }
+    })
+
+    res.status(201).json({
+      success: true,
+      data: consultation,
+      message: 'Consultation créée avec succès'
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create consultation',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
 // Route pour lister les médecins
 app.get('/api/v1/medecins', async (req, res) => {
   try {

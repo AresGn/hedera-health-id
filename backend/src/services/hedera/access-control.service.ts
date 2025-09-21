@@ -41,6 +41,15 @@ export class AccessControlService {
                 .addString(userData.publicKey)
                 .addString(userData.professionalId || '');
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.executeContractFunction(
                 this.contractId,
                 'registerUser',
@@ -84,6 +93,15 @@ export class AccessControlService {
                 .addUint256(permissionData.expirationDate)
                 .addStringArray(permissionData.allowedActions);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.executeContractFunction(
                 this.contractId,
                 'grantPermission',
@@ -116,6 +134,15 @@ export class AccessControlService {
         try {
             const functionParameters = new ContractFunctionParameters()
                 .addUint256(permissionId);
+
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
@@ -156,6 +183,15 @@ export class AccessControlService {
                 .addUint256(patientId)
                 .addString(action);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.callContractFunction(
                 this.contractId,
                 'hasPermission',
@@ -186,6 +222,15 @@ export class AccessControlService {
         try {
             const functionParameters = new ContractFunctionParameters()
                 .addAddress(userAddress);
+
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
 
             const result = await hederaService.callContractFunction(
                 this.contractId,
@@ -227,6 +272,15 @@ export class AccessControlService {
                 .addString(logData.action)
                 .addBool(logData.success)
                 .addString(logData.details);
+
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,

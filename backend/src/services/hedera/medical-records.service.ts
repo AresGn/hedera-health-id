@@ -68,6 +68,15 @@ export class MedicalRecordsService {
                 .addBool(recordData.isEmergency || false)
                 .addAddressArray(recordData.authorizedViewers || []);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.executeContractFunction(
                 this.contractId,
                 'createMedicalRecord',
@@ -102,6 +111,15 @@ export class MedicalRecordsService {
             const functionParameters = new ContractFunctionParameters()
                 .addUint256(recordId);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.callContractFunction(
                 this.contractId,
                 'getMedicalRecord',
@@ -133,6 +151,15 @@ export class MedicalRecordsService {
             const functionParameters = new ContractFunctionParameters()
                 .addUint256(recordId)
                 .addUint8(newStatus);
+
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
@@ -175,6 +202,15 @@ export class MedicalRecordsService {
                 .addString(reason)
                 .addString(newEncryptedDataHash);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.executeContractFunction(
                 this.contractId,
                 'amendMedicalRecord',
@@ -208,6 +244,15 @@ export class MedicalRecordsService {
             const functionParameters = new ContractFunctionParameters()
                 .addUint256(patientId);
 
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
+
             const result = await hederaService.callContractFunction(
                 this.contractId,
                 'getPatientRecords',
@@ -239,6 +284,15 @@ export class MedicalRecordsService {
             const functionParameters = new ContractFunctionParameters()
                 .addUint256(recordId)
                 .addAddress(viewerAddress);
+
+            if (!hederaService) {
+
+
+                throw new Error('Hedera service not available');
+
+
+            }
+
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
