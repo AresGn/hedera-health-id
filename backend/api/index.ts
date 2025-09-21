@@ -80,7 +80,7 @@ app.get('/health', async (req, res) => {
       version: config.API_VERSION
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       status: 'ERROR',
       message: 'Database connection failed',
       timestamp: new Date().toISOString(),
@@ -106,7 +106,7 @@ app.get('/api/v1/test', async (req, res) => {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Database query failed',
       message: error instanceof Error ? error.message : 'Unknown error'
     })
@@ -134,7 +134,7 @@ app.get('/api/v1/hopitaux', async (req, res) => {
       count: hopitaux.length
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch hospitals',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -168,7 +168,7 @@ app.get('/api/v1/patients', async (req, res) => {
       count: patients.length
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch patients',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -218,7 +218,7 @@ app.get('/api/v1/patients/:patientId', async (req, res) => {
       data: patient
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch patient',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -284,7 +284,7 @@ app.get('/api/v1/patients/:patientId/consultations', async (req, res) => {
     })
   } catch (error) {
     console.warn('Erreur lors de la récupération des consultations:', error)
-    res.json({
+    return res.json({
       success: true,
       data: [],
       count: 0
@@ -327,7 +327,7 @@ app.get('/api/v1/medecins', async (req, res) => {
     })
   } catch (error) {
     console.warn('Table medecin non trouvée, utilisation de valeur par défaut')
-    res.json({
+    return res.json({
       success: true,
       data: [],
       count: 0
@@ -381,7 +381,7 @@ app.get('/api/v1/consultations', async (req, res) => {
     })
   } catch (error) {
     console.warn('Table consultation non trouvée, utilisation de valeur par défaut')
-    res.json({
+    return res.json({
       success: true,
       data: [],
       count: 0
@@ -464,7 +464,7 @@ app.post('/api/v1/consultations', async (req, res) => {
     })
   } catch (error) {
     console.error('Erreur création consultation:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to create consultation',
       message: error instanceof Error ? error.message : 'Unknown error'
