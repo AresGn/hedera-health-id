@@ -6,7 +6,6 @@ import { config, validateConfig } from '../src/config/app.config'
 import { connectDatabase } from '../src/config/database.config'
 import prisma from '../src/config/database.config'
 import statistiquesRouter from '../src/routes/statistiques'
-import blockchainRouter from '../src/routes/blockchain'
 
 // Charger les variables d'environnement
 dotenv.config()
@@ -71,8 +70,8 @@ app.get('/health', async (req, res) => {
   try {
     // Test de connexion à la base de données
     await prisma.$queryRaw`SELECT 1`
-    
-    res.status(200).json({
+
+    return res.status(200).json({
       status: 'OK',
       message: 'Hedera Health API is running',
       timestamp: new Date().toISOString(),
@@ -100,7 +99,7 @@ app.get('/api/v1/test', async (req, res) => {
       permissions: await prisma.permissionMedecin.count()
     }
 
-    res.json({
+    return res.json({
       message: 'API Test successful',
       database_stats: stats,
       timestamp: new Date().toISOString()
@@ -128,7 +127,7 @@ app.get('/api/v1/hopitaux', async (req, res) => {
       }
     })
 
-    res.json({
+    return res.json({
       success: true,
       data: hopitaux,
       count: hopitaux.length
@@ -162,7 +161,7 @@ app.get('/api/v1/patients', async (req, res) => {
       }
     })
 
-    res.json({
+    return res.json({
       success: true,
       data: patients,
       count: patients.length
@@ -213,7 +212,7 @@ app.get('/api/v1/patients/:patientId', async (req, res) => {
       })
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: patient
     })
@@ -277,7 +276,7 @@ app.get('/api/v1/patients/:patientId/consultations', async (req, res) => {
       }
     })
 
-    res.json({
+    return res.json({
       success: true,
       data: consultations,
       count: consultations.length
@@ -320,7 +319,7 @@ app.get('/api/v1/medecins', async (req, res) => {
       }
     })
 
-    res.json({
+    return res.json({
       success: true,
       data: medecins,
       count: medecins.length
@@ -374,7 +373,7 @@ app.get('/api/v1/consultations', async (req, res) => {
       }
     })
 
-    res.json({
+    return res.json({
       success: true,
       data: consultations,
       count: consultations.length
@@ -457,7 +456,7 @@ app.post('/api/v1/consultations', async (req, res) => {
       }
     })
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: consultation,
       message: 'Consultation créée avec succès'
@@ -562,7 +561,7 @@ app.use('/api/v1/statistiques', statistiquesRouter)
 
 // Routes Hedera simplifiées pour les tests - v2
 app.get('/api/hedera/health', (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     message: 'Service Hedera opérationnel - v2',
     timestamp: new Date().toISOString(),
@@ -571,14 +570,14 @@ app.get('/api/hedera/health', (req, res) => {
 });
 
 app.get('/api/hedera/contracts', (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     contracts: {
       patientIdentity: process.env.PATIENT_IDENTITY_CONTRACT_ID || '0.0.6853950',
       accessControl: process.env.ACCESS_CONTROL_CONTRACT_ID || '0.0.6853951',
       medicalRecords: process.env.MEDICAL_RECORDS_CONTRACT_ID || '0.0.6853952'
     },
-    network: 'testnet',
+    network: process.env.HEDERA_NETWORK || 'testnet',
     operator: process.env.OPERATOR_ID || '0.0.6853949'
   });
 });
@@ -587,7 +586,7 @@ app.post('/api/hedera/create-patient', (req, res) => {
   const { personalData, patientAddress } = req.body;
 
   // Simulation de création de patient
-  res.json({
+  return res.json({
     success: true,
     patientId: Math.floor(Math.random() * 10000),
     transactionId: `0.0.${Date.now()}`,
@@ -604,7 +603,7 @@ app.get('/api/hedera/patient/:id', (req, res) => {
   const patientId = req.params.id;
 
   // Simulation de récupération de patient
-  res.json({
+  return res.json({
     success: true,
     patient: {
       patientId: parseInt(patientId),
