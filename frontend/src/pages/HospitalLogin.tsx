@@ -58,8 +58,6 @@ export default function HospitalLogin() {
       }
 
       console.log('✅ Authentification hôpital réussie:', response.data)
-      console.log('🔍 response.data:', response.data)
-      console.log('🔍 response.data.admin:', response.data?.admin)
 
       // Vérifier que les données sont présentes
       if (!response.data?.admin?.adminId) {

@@ -58,9 +58,6 @@ export default function PatientDashboard() {
 
       let consultations: Consultation[] = []
       if (consultationsResponse.success && consultationsResponse.data) {
-        console.log('🔍 Type de consultationsResponse.data:', typeof consultationsResponse.data)
-        console.log('🔍 consultationsResponse.data:', consultationsResponse.data)
-
         // Vérifier si data est un tableau
         const consultationsArray = Array.isArray(consultationsResponse.data)
           ? consultationsResponse.data

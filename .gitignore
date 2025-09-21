@@ -47,6 +47,10 @@ logs/
 *.db
 *.sqlite
 
+# Scripts avec mots de passe (sécurité)
+scripts/
+backend/scripts/
+
 # Hedera
 .hedera/
 hedera-*.json

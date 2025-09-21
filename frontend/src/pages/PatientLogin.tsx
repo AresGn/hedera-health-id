@@ -58,8 +58,6 @@ export default function PatientLogin() {
       }
 
       console.log('✅ Authentification réussie:', response.data)
-      console.log('🔍 response.data:', response.data)
-      console.log('🔍 response.data.patient:', response.data?.patient)
 
       // Vérifier que les données sont présentes
       if (!response.data?.patient?.patientId) {

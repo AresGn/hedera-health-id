@@ -96,11 +96,18 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
-      console.log(`✅ Success for ${url}:`, data)
+      const responseData = await response.json()
+      console.log(`✅ Success for ${url}:`, responseData)
+
+      // Si l'API backend retourne déjà une structure { success, data }, on l'utilise directement
+      if (responseData.success !== undefined) {
+        return responseData
+      }
+
+      // Sinon, on encapsule dans notre structure
       return {
         success: true,
-        data
+        data: responseData
       }
     } catch (error) {
       console.error(`❌ API Error for ${url}:`, error)
