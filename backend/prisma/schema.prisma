@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,269 +7,205 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ================================
-// MODÈLES UTILISATEURS
-// ================================
-
 model Patient {
-  id                String   @id @default(cuid())
-  patientId         String   @unique // BJ2025001 format
-  nom               String
-  prenom            String
-  dateNaissance     DateTime
-  telephone         String   @unique
-  email             String?  @unique
-  adresse           String?
-  ville             String?
-  groupeSanguin     String?
-  allergies         String[] // Array de strings
-  maladiesChroniques String[] // Array de strings
-  contactUrgence    String?
-  
-  // Authentification
-  passwordHash      String
-  lastLogin         DateTime?
+  id                 String              @id @default(cuid())
+  patientId          String              @unique
+  nom                String
+  prenom             String
+  dateNaissance      DateTime
+  telephone          String              @unique
+  email              String?             @unique
+  adresse            String?
+  ville              String?
+  groupeSanguin      String?
+  allergies          String[]
+  maladiesChroniques String[]
+  contactUrgence     String?
+  passwordHash       String
+  lastLogin          DateTime?
+  hederaAccountId    String?             @unique
+  publicKey          String?
+  hopitalPrincipal   String
+  qrCodeHash         String?             @unique
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  consultations      Consultation[]
+  notifications      Notification[]
+  permissions        PermissionMedecin[]
 
-  // Données blockchain
-  hederaAccountId   String?  @unique
-  publicKey         String?
-
-  // Métadonnées
-  hopitalPrincipal  String   // Référence à l'hôpital
-  qrCodeHash        String?  @unique
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  consultations     Consultation[]
-  permissions       PermissionMedecin[]
-  notifications     Notification[]
-  
   @@map("patients")
 }
 
 model Medecin {
-  id              String   @id @default(cuid())
-  medecinId       String   @unique // Format: MED-CHU-001
+  id              String              @id @default(cuid())
+  medecinId       String              @unique
   nom             String
   prenom          String
-  email           String   @unique
+  email           String              @unique
   telephone       String
   specialite      String
-  numeroOrdre     String   @unique // Numéro ordre des médecins
-  
-  // Affiliation
+  numeroOrdre     String              @unique
   hopitalId       String
-  hopital         Hopital  @relation(fields: [hopitalId], references: [id])
-  service         String   // Cardiologie, Pédiatrie, etc.
-  
-  // Authentification
+  service         String
   passwordHash    String
-  isActive        Boolean  @default(true)
+  isActive        Boolean             @default(true)
   lastLogin       DateTime?
-  
-  // Données blockchain
-  hederaAccountId String?  @unique
+  hederaAccountId String?             @unique
   publicKey       String?
-  
-  // Métadonnées
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Relations
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   consultations   Consultation[]
+  hopital         Hopital             @relation(fields: [hopitalId], references: [id])
   permissions     PermissionMedecin[]
-  
+
   @@map("medecins")
 }
 
 model Hopital {
-  id          String   @id @default(cuid())
-  code        String   @unique // chu-mel, cnhu-hkm
-  nom         String   // CHU-MEL, CNHU-HKM
-  ville       String
-  adresse     String
-  telephone   String
-  email       String
-  directeur   String?
-  
-  // Configuration
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  medecins    Medecin[]
+  id            String          @id @default(cuid())
+  code          String          @unique
+  nom           String
+  ville         String
+  adresse       String
+  telephone     String
+  email         String
+  directeur     String?
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   consultations Consultation[]
-  
+  admins        HospitalAdmin[]
+  medecins      Medecin[]
+
   @@map("hopitaux")
 }
 
-// ================================
-// MODÈLES MÉDICAUX
-// ================================
+model HospitalAdmin {
+  id           String    @id @default(cuid())
+  adminId      String    @unique
+  nom          String
+  prenom       String
+  email        String    @unique
+  telephone    String
+  passwordHash String
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  hopitalId    String
+  role         String    @default("admin")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  hopital      Hopital   @relation(fields: [hopitalId], references: [id])
+
+  @@map("hospital_admins")
+}
 
 model Consultation {
-  id              String   @id @default(cuid())
-  consultationId  String   @unique // Format: CONS-2025-001
-  
-  // Participants
-  patientId       String
-  patient         Patient  @relation(fields: [patientId], references: [id])
-  medecinId       String
-  medecin         Medecin  @relation(fields: [medecinId], references: [id])
-  hopitalId       String
-  hopital         Hopital  @relation(fields: [hopitalId], references: [id])
-  
-  // Détails consultation
-  dateConsultation DateTime
-  type            String   // consultation_generale, urgence, suivi, etc.
-  motif           String
-  diagnostic      String?
-  prescription    String?
-  examensPrescrits String[] // Array de strings
-  
-  // Données vitales
-  poids           Float?
-  taille          Float?
-  tensionArterielle String? // "120/80"
-  temperature     Float?
-  pouls           Int?
-  
-  // Statut
-  statut          ConsultationStatut @default(PROGRAMMEE)
-  notes           String?
-  
-  // Blockchain
-  hederaTxId      String?  @unique // Transaction ID Hedera
-  hcsMessageId    String?  @unique // HCS Message ID
-  
-  // Métadonnées
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id                String             @id @default(cuid())
+  consultationId    String             @unique
+  patientId         String
+  medecinId         String
+  hopitalId         String
+  dateConsultation  DateTime
+  type              String
+  motif             String
+  diagnostic        String?
+  prescription      String?
+  examensPrescrits  String[]
+  poids             Float?
+  taille            Float?
+  tensionArterielle String?
+  temperature       Float?
+  pouls             Int?
+  statut            ConsultationStatut @default(PROGRAMMEE)
+  notes             String?
+  hederaTxId        String?            @unique
+  hcsMessageId      String?            @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  hopital           Hopital            @relation(fields: [hopitalId], references: [id])
+  medecin           Medecin            @relation(fields: [medecinId], references: [id])
+  patient           Patient            @relation(fields: [patientId], references: [id])
+
   @@map("consultations")
 }
 
 model PermissionMedecin {
-  id              String   @id @default(cuid())
-  
-  // Participants
-  patientId       String
-  patient         Patient  @relation(fields: [patientId], references: [id])
-  medecinId       String
-  medecin         Medecin  @relation(fields: [medecinId], references: [id])
-  
-  // Permission
-  statut          PermissionStatut @default(EN_ATTENTE)
+  id               String           @id @default(cuid())
+  patientId        String
+  medecinId        String
+  statut           PermissionStatut @default(EN_ATTENTE)
   dateAutorisation DateTime?
-  dateExpiration  DateTime?
-  typeAcces       TypeAcces @default(LECTURE)
-  
-  // Blockchain
-  hederaTokenId   String?  @unique // HTS Token ID
-  
-  // Métadonnées
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  dateExpiration   DateTime?
+  typeAcces        TypeAcces        @default(LECTURE)
+  hederaTokenId    String?          @unique
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  medecin          Medecin          @relation(fields: [medecinId], references: [id])
+  patient          Patient          @relation(fields: [patientId], references: [id])
+
   @@unique([patientId, medecinId])
   @@map("permissions_medecins")
 }
 
-// ================================
-// MODÈLES SYSTÈME
-// ================================
-
 model Notification {
-  id          String   @id @default(cuid())
-  
-  // Destinataire
-  patientId   String?
-  patient     Patient? @relation(fields: [patientId], references: [id])
-  
-  // Contenu
-  type        TypeNotification
-  titre       String
-  message     String
-  isRead      Boolean  @default(false)
-  
-  // Métadonnées
-  createdAt   DateTime @default(now())
-  
+  id        String           @id @default(cuid())
+  patientId String?
+  type      TypeNotification
+  titre     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  patient   Patient?         @relation(fields: [patientId], references: [id])
+
   @@map("notifications")
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  
-  // Action
-  action      String   // CREATE_PATIENT, UPDATE_CONSULTATION, etc.
-  entityType  String   // Patient, Consultation, etc.
-  entityId    String
-  
-  // Utilisateur
-  userId      String
-  userType    String   // patient, medecin, admin
-  
-  // Détails
-  oldValues   Json?
-  newValues   Json?
-  ipAddress   String?
-  userAgent   String?
-  
-  // Blockchain
-  hederaTxId  String?
-  
-  // Métadonnées
-  createdAt   DateTime @default(now())
-  
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  userId     String
+  userType   String
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  hederaTxId String?
+  createdAt  DateTime @default(now())
+
   @@map("audit_logs")
 }
 
 model Session {
-  id          String   @id @default(cuid())
-  sessionId   String   @unique
-
-  // Utilisateur
-  userId      String
-  userType    String   // patient, medecin
-
-  // Session data
-  data        Json
-  expiresAt   DateTime
-
-  // Métadonnées
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  userId    String
+  userType  String
+  data      Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("sessions")
 }
 
 model Statistique {
-  id              String   @id @default(cuid())
-
-  // Période
-  periode         String   // 'daily', 'weekly', 'monthly', 'yearly'
-  date            DateTime // Date de la statistique
-
-  // Métriques
-  patientsActifs  Int      @default(0)
-  consultationsTotal Int   @default(0)
-  medecinsActifs  Int      @default(0)
-  economiesFCFA   Float    @default(0)
-  tempsEconomise  Int      @default(0) // en minutes
-
-  // Adoption système
-  adoptionSysteme Float    @default(0) // pourcentage
-  medecinsConnectes Float  @default(0) // pourcentage
-  patientsInscrits Float   @default(0) // pourcentage
-  satisfaction    Float    @default(0) // pourcentage
-
-  // Métadonnées
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  periode            String
+  date               DateTime
+  patientsActifs     Int      @default(0)
+  consultationsTotal Int      @default(0)
+  medecinsActifs     Int      @default(0)
+  economiesFCFA      Float    @default(0)
+  tempsEconomise     Int      @default(0)
+  adoptionSysteme    Float    @default(0)
+  medecinsConnectes  Float    @default(0)
+  patientsInscrits   Float    @default(0)
+  satisfaction       Float    @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@unique([periode, date])
   @@map("statistiques")
@@ -280,28 +213,16 @@ model Statistique {
 
 model ActiviteRecente {
   id          String   @id @default(cuid())
-
-  // Type d'activité
-  type        String   // 'nouveau_patient', 'medecin_connecte', 'maintenance', etc.
+  type        String
   titre       String
   description String?
-
-  // Données associées
-  count       Int?     // nombre d'éléments concernés
-  userId      String?  // utilisateur concerné
-
-  // Statut
+  count       Int?
+  userId      String?
   statut      String   @default("actif")
-
-  // Métadonnées
   createdAt   DateTime @default(now())
 
   @@map("activites_recentes")
 }
-
-// ================================
-// ENUMS
-// ================================
 
 enum ConsultationStatut {
   PROGRAMMEE

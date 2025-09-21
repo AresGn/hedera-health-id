@@ -77,7 +77,7 @@ export default function HomePage() {
               </div>
             </Link>
 
-            <Link to="/hospital/dashboard" className="block">
+            <Link to="/hospital/login" className="block">
               <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-purple-500">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center space-x-3">
                   <Building2 className="h-8 w-8 text-purple-500" />

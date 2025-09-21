@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import dotenv from 'dotenv'
+import bcrypt from 'bcrypt'
 import { config, validateConfig } from './config/app.config'
 import { connectDatabase, disconnectDatabase } from './config/database.config'
 import prisma from './config/database.config'
@@ -306,8 +307,27 @@ app.post('/api/v1/patients', async (req, res) => {
       groupeSanguin,
       allergies,
       maladiesChroniques,
-      contactUrgence
+      contactUrgence,
+      password
     } = req.body
+
+    // Validation des champs requis
+    if (!patientId || !nom || !prenom || !dateNaissance || !telephone || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'PatientId, nom, prenom, dateNaissance, telephone et password sont requis'
+      })
+    }
+
+    // Validation du mot de passe
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password too short',
+        message: 'Le mot de passe doit contenir au moins 6 caractères'
+      })
+    }
 
     // Vérifier si le patient existe déjà
     const existingPatient = await prisma.patient.findUnique({
@@ -321,6 +341,10 @@ app.post('/api/v1/patients', async (req, res) => {
         message: `Patient avec l'ID ${patientId} existe déjà`
       })
     }
+
+    // Hacher le mot de passe avec bcrypt
+    const saltRounds = 12
+    const passwordHash = await bcrypt.hash(password, saltRounds)
 
     const patient = await prisma.patient.create({
       data: {
@@ -336,7 +360,7 @@ app.post('/api/v1/patients', async (req, res) => {
         allergies: allergies || [],
         maladiesChroniques: maladiesChroniques || [],
         contactUrgence,
-        passwordHash: 'temp_hash_' + Date.now(), // Hash temporaire
+        passwordHash,
         isActive: true
       }
     })
@@ -530,6 +554,175 @@ app.get('/api/v1/consultations', async (req, res) => {
       success: true,
       data: [],
       count: 0
+    })
+  }
+})
+
+// Route d'authentification patient
+app.post('/api/v1/auth/patient', async (req, res) => {
+  try {
+    const { patientId, password } = req.body
+
+    // Validation des données
+    if (!patientId || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID patient et mot de passe requis'
+      })
+    }
+
+    // Recherche du patient
+    const patient = await prisma.patient.findUnique({
+      where: {
+        patientId: patientId,
+        isActive: true
+      },
+      select: {
+        id: true,
+        patientId: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        telephone: true,
+        ville: true,
+        hopitalPrincipal: true,
+        passwordHash: true,
+        lastLogin: true
+      }
+    })
+
+    if (!patient) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Vérifier le mot de passe avec bcrypt
+    const isPasswordValid = await bcrypt.compare(password, patient.passwordHash)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Mise à jour de la dernière connexion
+    await prisma.patient.update({
+      where: { id: patient.id },
+      data: { lastLogin: new Date() }
+    })
+
+    // Génération du token JWT (simulation)
+    const token = `patient_jwt_${patient.id}_${Date.now()}`
+
+    return res.json({
+      success: true,
+      data: {
+        token,
+        patient: {
+          id: patient.id,
+          patientId: patient.patientId,
+          nom: patient.nom,
+          prenom: patient.prenom,
+          email: patient.email,
+          telephone: patient.telephone,
+          ville: patient.ville,
+          hopitalPrincipal: patient.hopitalPrincipal,
+          lastLogin: patient.lastLogin
+        }
+      },
+      message: 'Authentification réussie'
+    })
+  } catch (error) {
+    console.error('Erreur authentification patient:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur serveur lors de l\'authentification'
+    })
+  }
+})
+
+// Route d'authentification hôpital
+app.post('/api/v1/auth/hospital', async (req, res) => {
+  try {
+    const { adminId, password } = req.body
+
+    // Validation des données
+    if (!adminId || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID administrateur et mot de passe requis'
+      })
+    }
+
+    // Recherche de l'administrateur
+    const admin = await prisma.hospitalAdmin.findUnique({
+      where: {
+        adminId: adminId,
+        isActive: true
+      },
+      include: {
+        hopital: {
+          select: {
+            nom: true,
+            code: true,
+            ville: true
+          }
+        }
+      }
+    })
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Vérifier le mot de passe avec bcrypt
+    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash)
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Identifiants invalides'
+      })
+    }
+
+    // Mise à jour de la dernière connexion
+    await prisma.hospitalAdmin.update({
+      where: { id: admin.id },
+      data: { lastLogin: new Date() }
+    })
+
+    // Génération du token JWT (simulation)
+    const token = `hospital_jwt_${admin.id}_${Date.now()}`
+
+    return res.json({
+      success: true,
+      data: {
+        token,
+        admin: {
+          id: admin.id,
+          adminId: admin.adminId,
+          nom: admin.nom,
+          prenom: admin.prenom,
+          email: admin.email,
+          telephone: admin.telephone,
+          role: admin.role,
+          hopital: admin.hopital,
+          lastLogin: admin.lastLogin
+        }
+      },
+      message: 'Authentification réussie'
+    })
+  } catch (error) {
+    console.error('Erreur authentification hôpital:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur serveur lors de l\'authentification'
     })
   }
 })

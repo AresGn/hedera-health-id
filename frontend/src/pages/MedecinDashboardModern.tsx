@@ -262,7 +262,7 @@ const MedecinDashboardModern = () => {
         {/* Sidebar */}
         <div className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
-          lg:translate-x-0 lg:static lg:inset-0
+          lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Sidebar Header */}
@@ -386,7 +386,7 @@ const MedecinDashboardModern = () => {
         )}
 
         {/* Contenu Principal */}
-        <div className="flex-1 lg:ml-0">
+        <div className="flex-1 lg:ml-64">
           <div className="p-6">
             {/* En-tête */}
             <div className="mb-8">

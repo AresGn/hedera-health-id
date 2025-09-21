@@ -9,6 +9,7 @@ import MedecinDashboard from './pages/MedecinDashboardModern'
 import PatientRecord from './pages/PatientRecord'
 import NewConsultation from './pages/NewConsultation'
 import HospitalDashboard from './pages/HospitalDashboard'
+import HospitalLogin from './pages/HospitalLogin'
 import USSDPage from './pages/USSDPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PWAInstallBanner from './components/pwa/PWAInstallBanner'
@@ -41,6 +42,7 @@ function App() {
             <Route path="/medecin/patient" element={<PatientRecord />} />
             <Route path="/medecin/consultation/new" element={<NewConsultation />} />
             <Route path="/medecin/*" element={<MedecinDashboard />} />
+            <Route path="/hospital/login" element={<HospitalLogin />} />
             <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
           </Routes>
 

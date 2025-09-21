@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Building2, Users, FileText, DollarSign, Clock,
-  TrendingUp, Download, BarChart3, Calendar, Bell, Settings,
-  Menu, X, Home, Activity, UserCheck, Database, LogOut
+  TrendingUp, Download, BarChart3, Calendar, Settings,
+  Menu, X, Activity, LogOut,
+  Stethoscope, AlertTriangle, Plus,
+  Eye
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
-import ApiStatus from '@/components/ApiStatus'
-import PatientManagement from '@/components/hospital/PatientManagement'
-import MedecinManagement from '@/components/hospital/MedecinManagement'
-import ConsultationManagement from '@/components/hospital/ConsultationManagement'
-import StorageTest from '@/components/StorageTest'
+import { useApi } from '@/services/api'
 
 interface HospitalStats {
   patients: {
@@ -47,16 +45,40 @@ interface ActiviteRecente {
   createdAt: string
 }
 
+interface RecentPatient {
+  id: string
+  patientId: string
+  nom: string
+  prenom: string
+  lastConsultation: string
+  status: 'stable' | 'attention' | 'critique'
+}
+
+interface MedecinInfo {
+  id: string
+  medecinId: string
+  nom: string
+  prenom: string
+  specialite: string
+  service: string
+  consultationsToday: number
+  isActive: boolean
+}
+
 export default function HospitalDashboard() {
+  const navigate = useNavigate()
+  const api = useApi()
   const [selectedPeriod, setSelectedPeriod] = useState('mois')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState('overview')
   const [stats, setStats] = useState<HospitalStats | null>(null)
   const [activites, setActivites] = useState<ActiviteRecente[]>([])
+  const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([])
+  const [medecins, setMedecins] = useState<MedecinInfo[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Charger les données réelles
+  // Charger les données du dashboard
   useEffect(() => {
     loadDashboardData()
   }, [])
@@ -65,426 +87,606 @@ export default function HospitalDashboard() {
     setIsLoading(true)
     setError('')
 
-    // Utiliser l'API service configuré
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const url = `${API_URL}/api/v1/statistiques/dashboard`
-
-    console.log(`🔄 Chargement des données depuis: ${url}`)
-
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        credentials: 'omit',
-        // Timeout de 10 secondes
-        signal: AbortSignal.timeout(10000)
-      })
-
-      console.log(`📡 Response status: ${response.status}`)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error(`❌ HTTP Error ${response.status}:`, errorText)
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log('✅ Données reçues:', data)
-
-      if (data.success) {
-        console.log('✅ Données chargées avec succès depuis:', url)
-        setStats(data.data.statistiques)
-        setActivites(data.data.activitesRecentes)
-        setError('') // Effacer toute erreur précédente
-      } else {
-        throw new Error(data.error || 'Erreur lors du chargement des données')
-      }
-    } catch (err) {
-      console.error('❌ Erreur lors du chargement des données:', err)
-      setError(`Impossible de charger les données du dashboard: ${err instanceof Error ? err.message : 'Erreur inconnue'}`)
-
-      // Données par défaut en cas d'erreur
-      setStats({
-        patients: { actifs: 0, croissance: '+0%' },
-        consultations: { total: 0, croissance: '+0%' },
-        economies: { montant: 0, unite: 'M FCFA' },
-        temps: { economise: 0, unite: 'heures' },
+      // Simuler les statistiques pour le moment
+      const mockStats: HospitalStats = {
+        patients: { actifs: 1247, croissance: '12%' },
+        consultations: { total: 3456, croissance: '8%' },
+        economies: { montant: 45000, unite: 'FCFA' },
+        temps: { economise: 120, unite: 'heures' },
         adoption: {
-          systeme: 0,
-          medecinsActifs: 0,
-          patientsInscrits: 0,
-          satisfaction: 0
+          systeme: 85,
+          medecinsActifs: 24,
+          patientsInscrits: 1247,
+          satisfaction: 92
         }
-      })
-      setActivites([])
+      }
+      setStats(mockStats)
+
+      // Charger les patients récents
+      const patientsResponse = await api.getPatients()
+      if (patientsResponse.success && patientsResponse.data?.data) {
+        const patients = patientsResponse.data.data.slice(0, 5).map((p: any) => ({
+          id: p.id,
+          patientId: p.patientId,
+          nom: p.nom,
+          prenom: p.prenom,
+          lastConsultation: p.lastLogin || new Date().toISOString(),
+          status: 'stable' as const
+        }))
+        setRecentPatients(patients)
+      }
+
+      // Charger les médecins
+      const medecinsResponse = await api.getMedecins()
+      if (medecinsResponse.success && medecinsResponse.data) {
+        const medecinsData = medecinsResponse.data.slice(0, 6).map((m: any) => ({
+          id: m.id,
+          medecinId: m.medecinId,
+          nom: m.nom,
+          prenom: m.prenom,
+          specialite: m.specialite,
+          service: m.service,
+          consultationsToday: Math.floor(Math.random() * 12) + 1,
+          isActive: m.isActive
+        }))
+        setMedecins(medecinsData)
+      }
+
+      // Simuler des activités récentes
+      const mockActivites: ActiviteRecente[] = [
+        {
+          id: '1',
+          type: 'patient',
+          titre: 'Nouveau patient enregistré',
+          description: 'Patient BJ2025004 ajouté au système',
+          statut: 'success',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          type: 'consultation',
+          titre: 'Consultation terminée',
+          description: 'Dr. AGBODJAN - Patient BJ2025001',
+          statut: 'success',
+          createdAt: new Date(Date.now() - 3600000).toISOString()
+        }
+      ]
+      setActivites(mockActivites)
+
+    } catch (error) {
+      console.error('Erreur chargement données:', error)
+      setError('Erreur lors du chargement des données')
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
-  // const formatCurrency = (amount: number) => {
-  //   return new Intl.NumberFormat('fr-FR', {
-  //     style: 'currency',
-  //     currency: 'XOF',
-  //     minimumFractionDigits: 0
-  //   }).format(amount)
-  // }
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('fr-FR').format(num)
+  const handleLogout = () => {
+    // Supprimer les données de session
+    localStorage.removeItem('hospital_session')
+    navigate('/hospital/login')
   }
 
-  const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'patients', label: 'Patients', icon: Users },
-    { id: 'medecins', label: 'Médecins', icon: UserCheck },
-    { id: 'consultations', label: 'Consultations', icon: FileText },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'activite', label: 'Activité', icon: Activity },
-    { id: 'base-donnees', label: 'Base de données', icon: Database },
-    { id: 'parametres', label: 'Paramètres', icon: Settings },
-  ]
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'stable': return 'text-green-600 bg-green-50'
+      case 'attention': return 'text-yellow-600 bg-yellow-50'
+      case 'critique': return 'text-red-600 bg-red-50'
+      default: return 'text-gray-600 bg-gray-50'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement du dashboard hôpital...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:fixed lg:inset-y-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <Building2 className="h-8 w-8 text-hedera-500" />
-            <span className="text-xl font-bold text-gray-800">CHU-MEL</span>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-500 hover:text-gray-700"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
-        <nav className="mt-6 px-3">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-left transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-hedera-50 text-hedera-700 border-r-2 border-hedera-500'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 space-y-3">
-          {/* Statut API */}
-          <div className="px-3">
-            <ApiStatus showDetails={false} />
-          </div>
-
-          <Link to="/" className="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50">
-            <LogOut className="h-5 w-5" />
-            <span>Retour accueil</span>
-          </Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Mobile */}
+      <div className="lg:hidden bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        <h1 className="text-lg font-semibold text-gray-900">Dashboard Hôpital</h1>
+        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <Building2 className="h-5 w-5 text-white" />
         </div>
       </div>
 
-      {/* Overlay pour mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Contenu principal */}
-      <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100"
-              >
-                <Menu className="h-6 w-6" />
-              </button>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">
-                {sidebarItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
-              </h1>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+          lg:translate-x-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between h-16 px-6 border-b">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-semibold text-gray-900">Hedera Health</span>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-hedera-500"
-              >
-                <option value="semaine">Cette semaine</option>
-                <option value="mois">Ce mois</option>
-                <option value="trimestre">Ce trimestre</option>
-                <option value="annee">Cette année</option>
-              </select>
-              <Button variant="outline" size="sm" className="hidden sm:flex">
-                <Bell className="h-4 w-4" />
-              </Button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-1 rounded-md text-gray-400 hover:bg-gray-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Profil Hôpital */}
+          <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  CHU Mère-Enfant Lagune
+                </h3>
+                <p className="text-xs text-gray-600">Centre Hospitalier Universitaire</p>
+                <p className="text-xs text-gray-500">Cotonou, Bénin</p>
+              </div>
             </div>
           </div>
-        </header>
 
-        {/* Contenu */}
-        <main className="p-4 sm:p-6 max-w-7xl mx-auto">
-          {activeTab === 'dashboard' && (
-            <>
-              {/* Titre de section */}
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center space-x-2">
-                  <BarChart3 className="h-6 w-6 text-hedera-500" />
-                  <span>STATISTIQUES DU {selectedPeriod.toUpperCase()}</span>
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${error ? 'bg-red-500' : 'bg-green-500'} animate-pulse`}></div>
-                  <span className="text-xs text-gray-500">
-                    {error ? 'Hors ligne' : 'En ligne'}
-                  </span>
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'overview' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span className="font-medium">Vue d'ensemble</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('patients')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'patients' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Users className="h-5 w-5" />
+              <span className="font-medium">Patients</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('medecins')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'medecins' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Stethoscope className="h-5 w-5" />
+              <span className="font-medium">Médecins</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('consultations')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'consultations' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <FileText className="h-5 w-5" />
+              <span className="font-medium">Consultations</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'analytics' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <TrendingUp className="h-5 w-5" />
+              <span className="font-medium">Analyses</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeTab === 'settings' 
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="font-medium">Paramètres</span>
+            </button>
+
+            {/* Déconnexion */}
+            <div className="pt-4 border-t">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="font-medium">Déconnexion</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+
+        {/* Overlay pour mobile */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Contenu Principal */}
+        <div className="flex-1 lg:ml-64">
+          <div className="p-6">
+            {/* En-tête */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Dashboard Hôpital</h1>
+                  <p className="text-gray-600 mt-1">
+                    Gestion et supervision des activités hospitalières
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <select
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="jour">Aujourd'hui</option>
+                    <option value="semaine">Cette semaine</option>
+                    <option value="mois">Ce mois</option>
+                    <option value="annee">Cette année</option>
+                  </select>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exporter
+                  </Button>
                 </div>
               </div>
+            </div>
 
-              {/* Affichage d'erreur */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <p className="text-red-800">{error}</p>
-                </div>
-              )}
-
-              {/* Indicateur de chargement */}
-              {isLoading && !stats && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hedera-500"></div>
-                  <span className="ml-2 text-gray-600">Chargement des données...</span>
-                </div>
-              )}
-
-              {/* Métriques principales */}
-              {stats && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                  {/* Patients */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-5 w-5 text-hedera-500" />
-                        <span className="font-medium text-gray-700">PATIENTS</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-bold text-gray-800 animate-pulse">{formatNumber(stats.patients.actifs)} <span className="text-lg text-gray-600">actifs</span></p>
-                      <div className="flex items-center space-x-1">
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-green-600 font-medium">{stats.patients.croissance} vs mois</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Consultations */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-5 w-5 text-blue-500" />
-                        <span className="font-medium text-gray-700">CONSULT.</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-bold text-gray-800">{formatNumber(stats.consultations.total)} <span className="text-lg text-gray-600">total</span></p>
-                      <div className="flex items-center space-x-1">
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-green-600 font-medium">{stats.consultations.croissance}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Économies */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-5 w-5 text-yellow-500" />
-                        <span className="font-medium text-gray-700">ÉCONOMIES</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-bold text-gray-800">{stats.economies.montant} {stats.economies.unite}</p>
-                      <p className="text-sm text-gray-600">économisés</p>
-                    </div>
-                  </div>
-
-                  {/* Temps */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-5 w-5 text-purple-500" />
-                        <span className="font-medium text-gray-700">TEMPS</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-bold text-gray-800">{stats.temps.economise} {stats.temps.unite}</p>
-                      <p className="text-sm text-gray-600">économisées</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Graphique d'utilisation */}
-              {stats && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-                      <BarChart3 className="h-5 w-5 text-hedera-500" />
-                      <span>GRAPHIQUE UTILISATION</span>
-                    </h3>
-
-                    <div className="space-y-4">
+            {/* Contenu selon l'onglet actif */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Statistiques principales */}
+                {stats && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Adoption système</span>
-                        <span className="text-sm font-medium text-gray-800">{stats.adoption.systeme}%</span>
-                      </div>
-
-                      <div className="w-full bg-gray-200 rounded-full h-4">
-                        <div
-                          className="bg-hedera-500 h-4 rounded-full transition-all duration-300"
-                          style={{ width: `${stats.adoption.systeme}%` }}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4 mt-6">
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-green-600">{stats.adoption.medecinsActifs}%</p>
-                          <p className="text-xs text-gray-500">Médecins actifs</p>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Patients Actifs</p>
+                          <p className="text-2xl font-bold text-gray-900">{stats.patients.actifs}</p>
+                          <p className="text-xs text-green-600 mt-1">
+                            +{stats.patients.croissance} ce mois
+                          </p>
                         </div>
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-blue-600">{stats.adoption.patientsInscrits}%</p>
-                          <p className="text-xs text-gray-500">Patients inscrits</p>
+                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                          <Users className="h-6 w-6 text-blue-600" />
                         </div>
-                        <div className="text-center">
-                          <p className="text-lg font-bold text-purple-600">{stats.adoption.satisfaction}%</p>
-                          <p className="text-xs text-gray-500">Satisfaction</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Consultations</p>
+                          <p className="text-2xl font-bold text-gray-900">{stats.consultations.total}</p>
+                          <p className="text-xs text-green-600 mt-1">
+                            +{stats.consultations.croissance} ce mois
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                          <Stethoscope className="h-6 w-6 text-green-600" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Économies</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {stats.economies.montant} {stats.economies.unite}
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            Réduction des coûts
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
+                          <DollarSign className="h-6 w-6 text-yellow-600" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Temps Économisé</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {stats.temps.economise} {stats.temps.unite}
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            Efficacité améliorée
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                          <Clock className="h-6 w-6 text-purple-600" />
                         </div>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Activité récente */}
-                  <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-                      <Calendar className="h-5 w-5 text-hedera-500" />
-                      <span>ACTIVITÉ RÉCENTE</span>
-                    </h3>
-            
-            <div className="space-y-4">
-              {activites.length > 0 ? (
-                activites.slice(0, 3).map((activite) => {
-                  const getActivityColor = (type: string) => {
-                    switch (type) {
-                      case 'nouveau_patient': return { bg: 'bg-green-50', dot: 'bg-green-500' }
-                      case 'medecin_connecte': return { bg: 'bg-blue-50', dot: 'bg-blue-500' }
-                      case 'maintenance': return { bg: 'bg-yellow-50', dot: 'bg-yellow-500' }
-                      default: return { bg: 'bg-gray-50', dot: 'bg-gray-500' }
-                    }
-                  }
-
-                  const colors = getActivityColor(activite.type)
-
-                  return (
-                    <div key={activite.id} className={`flex items-center space-x-3 p-3 ${colors.bg} rounded-lg`}>
-                      <div className={`w-2 h-2 ${colors.dot} rounded-full`}></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">{activite.titre}</p>
-                        <p className="text-xs text-gray-500">{activite.description}</p>
+                {/* Grille avec patients récents et médecins actifs */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Patients récents */}
+                  <div className="bg-white rounded-xl shadow-sm border">
+                    <div className="p-6 border-b">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Patients Récents</h3>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          Voir tout
+                        </Button>
                       </div>
                     </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-sm text-gray-500">Aucune activité récente</p>
-                </div>
-              )}
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        {recentPatients.map((patient) => (
+                          <div key={patient.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Users className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {patient.prenom} {patient.nom}
+                                </p>
+                                <p className="text-sm text-gray-500">{patient.patientId}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
+                                {patient.status}
+                              </span>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatDate(patient.lastConsultation)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Médecins actifs */}
+                  <div className="bg-white rounded-xl shadow-sm border">
+                    <div className="p-6 border-b">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Médecins Actifs</h3>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          Voir tout
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        {medecins.map((medecin) => (
+                          <div key={medecin.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <Stethoscope className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  Dr. {medecin.prenom} {medecin.nom}
+                                </p>
+                                <p className="text-sm text-gray-500">{medecin.specialite}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-900">
+                                {medecin.consultationsToday} consultations
+                              </p>
+                              <p className="text-xs text-gray-500">{medecin.service}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="primary" className="flex items-center space-x-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>RAPPORT DÉTAILLÉ</span>
-                </Button>
-
-                <Button variant="outline" className="flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>EXPORTER DONNÉES</span>
-                </Button>
+                {/* Activités récentes */}
+                {activites.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border">
+                    <div className="p-6 border-b">
+                      <h3 className="text-lg font-semibold text-gray-900">Activités Récentes</h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        {activites.slice(0, 5).map((activite) => (
+                          <div key={activite.id} className="flex items-start space-x-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <Activity className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{activite.titre}</p>
+                              {activite.description && (
+                                <p className="text-sm text-gray-500">{activite.description}</p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1">
+                                {formatDate(activite.createdAt)}
+                              </p>
+                            </div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              activite.statut === 'success' ? 'text-green-800 bg-green-100' :
+                              activite.statut === 'warning' ? 'text-yellow-800 bg-yellow-100' :
+                              'text-red-800 bg-red-100'
+                            }`}>
+                              {activite.statut}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </>
-          )}
+            )}
 
-          {/* Autres onglets */}
-          {activeTab === 'patients' && (
-            <PatientManagement />
-          )}
-
-          {activeTab === 'medecins' && (
-            <MedecinManagement />
-          )}
-
-          {activeTab === 'consultations' && (
-            <ConsultationManagement />
-          )}
-
-          {activeTab === 'analytics' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Analytics Avancées</h3>
-              <p className="text-gray-600">Analytics avancées en cours de développement...</p>
-            </div>
-          )}
-
-          {activeTab === 'activite' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Journal d'Activité</h3>
-              <p className="text-gray-600">Journal d'activité en cours de développement...</p>
-            </div>
-          )}
-
-          {activeTab === 'base-donnees' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Base de Données</h3>
-                <ApiStatus showDetails={true} className="mb-4" />
+            {/* Onglet Patients */}
+            {activeTab === 'patients' && (
+              <div className="bg-white rounded-xl shadow-sm border">
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Patients</h3>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouveau Patient
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Patients</h3>
+                    <p className="text-gray-500">
+                      Interface de gestion complète des patients sera implémentée ici.
+                    </p>
+                  </div>
+                </div>
               </div>
+            )}
 
-              <StorageTest />
-
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h4 className="font-semibold mb-3">Gestion des données</h4>
-                <p className="text-gray-600 text-sm">Interface de gestion de la base de données en cours de développement...</p>
+            {/* Onglet Médecins */}
+            {activeTab === 'medecins' && (
+              <div className="bg-white rounded-xl shadow-sm border">
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Médecins</h3>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouveau Médecin
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-12">
+                    <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Médecins</h3>
+                    <p className="text-gray-500">
+                      Interface de gestion complète des médecins sera implémentée ici.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 'parametres' && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Paramètres</h3>
-              <p className="text-gray-600">Paramètres système en cours de développement...</p>
-            </div>
-          )}
-        </main>
+            {/* Onglet Consultations */}
+            {activeTab === 'consultations' && (
+              <div className="bg-white rounded-xl shadow-sm border">
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Consultations</h3>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Planifier
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Consultations</h3>
+                    <p className="text-gray-500">
+                      Interface de gestion complète des consultations sera implémentée ici.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Onglet Analyses */}
+            {activeTab === 'analytics' && (
+              <div className="bg-white rounded-xl shadow-sm border">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-semibold text-gray-900">Analyses et Rapports</h3>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-12">
+                    <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Analyses Avancées</h3>
+                    <p className="text-gray-500">
+                      Tableaux de bord analytiques et rapports détaillés seront implémentés ici.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Onglet Paramètres */}
+            {activeTab === 'settings' && (
+              <div className="bg-white rounded-xl shadow-sm border">
+                <div className="p-6 border-b">
+                  <h3 className="text-lg font-semibold text-gray-900">Paramètres de l'Hôpital</h3>
+                </div>
+                <div className="p-6">
+                  <div className="text-center py-12">
+                    <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Configuration</h3>
+                    <p className="text-gray-500">
+                      Paramètres de configuration de l'hôpital seront implémentés ici.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Message d'erreur */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                  <p className="text-red-700">{error}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

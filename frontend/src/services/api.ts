@@ -146,6 +146,28 @@ class ApiService {
     })
   }
 
+  // Authentification patient
+  async authenticatePatient(credentials: {
+    patientId: string
+    password: string
+  }): Promise<ApiResponse<{ token: string, patient: any }>> {
+    return this.request<{ token: string, patient: any }>('/api/v1/auth/patient', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    })
+  }
+
+  // Authentification hôpital
+  async authenticateHospital(credentials: {
+    adminId: string
+    password: string
+  }): Promise<ApiResponse<{ token: string, admin: any }>> {
+    return this.request<{ token: string, admin: any }>('/api/v1/auth/hospital', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    })
+  }
+
   // Authentification médecin (à implémenter côté backend)
   async loginMedecin(credentials: {
     email: string
@@ -214,6 +236,10 @@ export function useApi() {
     createConsultation: (data: any) => apiService.createConsultation(data),
     createPatient: (data: Parameters<typeof apiService.createPatient>[0]) =>
       apiService.createPatient(data),
+    authenticatePatient: (credentials: Parameters<typeof apiService.authenticatePatient>[0]) =>
+      apiService.authenticatePatient(credentials),
+    authenticateHospital: (credentials: Parameters<typeof apiService.authenticateHospital>[0]) =>
+      apiService.authenticateHospital(credentials),
     loginMedecin: (credentials: Parameters<typeof apiService.loginMedecin>[0]) =>
       apiService.loginMedecin(credentials),
     checkConnectivity: () => apiService.checkConnectivity(),

@@ -58,7 +58,15 @@ export default function PatientDashboard() {
 
       let consultations: Consultation[] = []
       if (consultationsResponse.success && consultationsResponse.data) {
-        consultations = consultationsResponse.data.map((consultation: any) => ({
+        console.log('🔍 Type de consultationsResponse.data:', typeof consultationsResponse.data)
+        console.log('🔍 consultationsResponse.data:', consultationsResponse.data)
+
+        // Vérifier si data est un tableau
+        const consultationsArray = Array.isArray(consultationsResponse.data)
+          ? consultationsResponse.data
+          : []
+
+        consultations = consultationsArray.map((consultation: any) => ({
           id: consultation.id,
           date: new Date(consultation.dateConsultation).toLocaleDateString('fr-FR'),
           medecin: `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}`,

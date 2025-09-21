@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, User, Lock, Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import { useApi } from '@/services/api'
 
 interface LoginFormData {
   patientId: string
@@ -11,6 +12,7 @@ interface LoginFormData {
 
 export default function PatientLogin() {
   const navigate = useNavigate()
+  const api = useApi()
   const [formData, setFormData] = useState<LoginFormData>({
     patientId: '',
     password: ''
@@ -43,21 +45,38 @@ export default function PatientLogin() {
         throw new Error('Veuillez saisir votre mot de passe')
       }
 
-      // TODO: Implémenter l'authentification avec l'API
-      // Pour l'instant, simulation d'une connexion réussie
-      if (formData.patientId.startsWith('BJ') && formData.password.length >= 6) {
-        // Stocker les informations de session
-        localStorage.setItem('patient_session', JSON.stringify({
-          patientId: formData.patientId,
-          isAuthenticated: true,
-          loginTime: new Date().toISOString()
-        }))
-        
-        // Rediriger vers le tableau de bord
-        navigate('/patient/dashboard')
-      } else {
-        throw new Error('ID patient ou mot de passe incorrect')
+      // Appel API d'authentification
+      console.log('🔄 Tentative d\'authentification pour:', formData.patientId)
+
+      const response = await api.authenticatePatient({
+        patientId: formData.patientId,
+        password: formData.password
+      })
+
+      if (!response.success) {
+        throw new Error(response.error || 'Erreur d\'authentification')
       }
+
+      console.log('✅ Authentification réussie:', response.data)
+      console.log('🔍 response.data:', response.data)
+      console.log('🔍 response.data.patient:', response.data?.patient)
+
+      // Vérifier que les données sont présentes
+      if (!response.data?.patient?.patientId) {
+        throw new Error('Données patient manquantes dans la réponse')
+      }
+
+      // Stocker les informations de session
+      localStorage.setItem('patient_session', JSON.stringify({
+        patientId: response.data.patient.patientId,
+        token: response.data.token,
+        patient: response.data.patient,
+        isAuthenticated: true,
+        loginTime: new Date().toISOString()
+      }))
+
+      // Rediriger vers le tableau de bord
+      navigate('/patient/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de connexion')
     } finally {
