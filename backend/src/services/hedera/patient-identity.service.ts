@@ -35,11 +35,6 @@ export class PatientIdentityService {
             if (!hederaService) {
                 throw new Error('Hedera service not available');
             }
-            if (!hederaService) {
-
-                throw new Error('Hedera service not available');
-
-            }
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
@@ -76,13 +71,8 @@ export class PatientIdentityService {
                 .addUint256(patientId);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
-
 
             const result = await hederaService.callContractFunction(
                 this.contractId,
@@ -124,13 +114,8 @@ export class PatientIdentityService {
                 .addString(newMetadataHash || '');
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
-
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
@@ -167,13 +152,8 @@ export class PatientIdentityService {
                 .addAddress(doctorAddress);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
-
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,
@@ -210,13 +190,8 @@ export class PatientIdentityService {
                 .addAddress(doctorAddress);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
-
 
             const result = await hederaService.executeContractFunction(
                 this.contractId,

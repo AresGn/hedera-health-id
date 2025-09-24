@@ -69,11 +69,7 @@ export class MedicalRecordsService {
                 .addAddressArray(recordData.authorizedViewers || []);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -112,11 +108,7 @@ export class MedicalRecordsService {
                 .addUint256(recordId);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -156,8 +148,6 @@ export class MedicalRecordsService {
 
 
                 throw new Error('Hedera service not available');
-
-
             }
 
 

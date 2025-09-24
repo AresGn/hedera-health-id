@@ -143,6 +143,5 @@ export class HederaService {
     }
 }
 
-// Instance singleton - Temporairement désactivé pour les tests
-// export const hederaService = new HederaService();
-export const hederaService: HederaService | null = null; // Désactivé temporairement
+// Instance singleton - Service Hedera activé
+export const hederaService = new HederaService();

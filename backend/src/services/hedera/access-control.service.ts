@@ -42,11 +42,7 @@ export class AccessControlService {
                 .addString(userData.professionalId || '');
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -94,11 +90,7 @@ export class AccessControlService {
                 .addStringArray(permissionData.allowedActions);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -136,11 +128,7 @@ export class AccessControlService {
                 .addUint256(permissionId);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -184,11 +172,7 @@ export class AccessControlService {
                 .addString(action);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -224,11 +208,7 @@ export class AccessControlService {
                 .addAddress(userAddress);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
@@ -274,11 +254,7 @@ export class AccessControlService {
                 .addString(logData.details);
 
             if (!hederaService) {
-
-
                 throw new Error('Hedera service not available');
-
-
             }
 
 
