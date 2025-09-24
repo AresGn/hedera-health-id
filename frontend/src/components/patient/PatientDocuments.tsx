@@ -82,7 +82,7 @@ export default function PatientDocuments() {
   }
 
   const handleDelete = async (fileId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
+    if (window.confirm('Are you sure you want to delete this document?')) {
       const success = await fileStorage.deleteFile(fileId)
       if (success) {
         setDocuments(prev => prev.filter(doc => doc.id !== fileId))

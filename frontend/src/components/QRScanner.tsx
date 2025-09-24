@@ -20,13 +20,13 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const scanIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Démarrer la caméra
+  // Start camera
   const startCamera = async () => {
     try {
       setError('')
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment', // Caméra arrière préférée
+          facingMode: 'environment', // Prefer rear camera
           width: { ideal: 640 },
           height: { ideal: 480 }
         }
@@ -41,12 +41,12 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
       setIsScanning(true)
       startScanning()
     } catch (error) {
-      console.error('Erreur accès caméra:', error)
-      setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
+      console.error('Camera access error:', error)
+      setError("Can't access camera. Check permissions.")
     }
   }
 
-  // Arrêter la caméra
+  // Stop camera
   const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop())
@@ -58,13 +58,13 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
     setIsScanning(false)
   }
 
-  // Scanner le QR Code depuis la vidéo
+  // Scan QR code from video
   const startScanning = () => {
     if (!videoRef.current || !canvasRef.current) return
 
     scanIntervalRef.current = setInterval(() => {
       scanFrame()
-    }, 500) // Scanner toutes les 500ms
+    }, 500) // Scan every 500ms
   }
 
   const scanFrame = () => {
@@ -89,12 +89,12 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
     simulateQRDetection(imageData)
   }
 
-  // Simulation de détection QR (en production, utiliser jsQR ou similaire)
+  // Simulate QR detection (in production, use jsQR or similar)
   const simulateQRDetection = (_imageData: ImageData) => {
-    // Simulation: détecter un QR Code après 3 secondes de scan
+    // Simulate: detect QR code after 3 seconds of scan
     if (isScanning) {
       setTimeout(() => {
-        // Données de test pour la démo
+        // Test data for demo
         const testQRData = {
           patientId: 'BJ2025001',
           nom: 'KOSSOU',

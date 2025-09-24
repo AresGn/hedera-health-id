@@ -12,11 +12,11 @@ export default function PatientPermissions({ medecinsAutorises }: PatientPermiss
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
         <h2 className="text-xl font-bold text-gray-800 flex items-center space-x-2">
           <Shield className="h-5 w-5 text-hedera-500" />
-          <span>Gestion des permissions</span>
+          <span>Permission Management</span>
         </h2>
         <Button variant="primary" size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          Autoriser un médecin
+          Authorize a doctor
         </Button>
       </div>
 
@@ -31,18 +31,18 @@ export default function PatientPermissions({ medecinsAutorises }: PatientPermiss
                     medecin.statut === 'actif' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
                   }`}>
                     {medecin.statut === 'actif' ? <CheckCircle className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
-                    {medecin.statut}
+                    {medecin.statut === 'actif' ? 'Active' : 'Revoked'}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 mb-1">{medecin.specialite} - {medecin.hopital}</p>
-                <p className="text-sm text-gray-500">Autorisé depuis le {new Date(medecin.dateAutorisation).toLocaleDateString('fr-FR')}</p>
+                <p className="text-sm text-gray-500">Authorized since {new Date(medecin.dateAutorisation).toLocaleDateString('en-US')}</p>
               </div>
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm">
-                  Modifier
+                  Edit
                 </Button>
                 <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                  Révoquer
+                  Revoke
                 </Button>
               </div>
             </div>
