@@ -23,60 +23,60 @@ export default function PatientIdGeneration() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    // Récupérer les données du patient depuis l'état de navigation
+    // Retrieve patient data from navigation state
     const data = location.state?.patientData
     if (!data) {
-      // Rediriger vers l'inscription si pas de données
+      // Redirect to registration if no data
       navigate('/patient/register')
       return
     }
 
     setPatientData(data)
     
-    // Générer un ID unique pour le patient
-    const generatedId = generatePatientId()
-    setPatientId(generatedId)
-    setUssdCode(`*789*${generatedId}#`)
+  // Generate a unique ID for the patient
+  const generatedId = generatePatientId()
+  setPatientId(generatedId)
+  setUssdCode(`*789*${generatedId}#`)
     
-    // Générer le QR Code (simulation)
-    generateQRCode(generatedId)
+  // Generate the QR Code (simulation)
+  generateQRCode(generatedId)
   }, [location.state, navigate])
 
   const generatePatientId = (): string => {
-    // Format: BJ + année + numéro séquentiel
-    const year = new Date().getFullYear()
-    const sequence = Math.floor(Math.random() * 9999) + 1
-    return `BJ${year}${sequence.toString().padStart(4, '0')}`
+  // Format: BJ + year + sequential number
+  const year = new Date().getFullYear()
+  const sequence = Math.floor(Math.random() * 9999) + 1
+  return `BJ${year}${sequence.toString().padStart(4, '0')}`
   }
 
   const generateQRCode = async (id: string) => {
     try {
       if (!patientData) return
 
-      // Données du patient pour le QR Code
+      // Patient data for QR Code
       const qrData = {
         patientId: id,
         nom: patientData.nom,
         prenom: patientData.prenom,
         hopital: patientData.hopitalPrincipal,
         dateNaissance: patientData.dateNaissance,
-        // Données fictives pour la démo
+        // Demo data
         groupeSanguin: 'A+',
-        allergies: ['Pénicilline']
+        allergies: ['Penicillin']
       }
 
-      // Génération du QR Code avec chiffrement
+      // Generate QR Code with encryption
       const qrCodeDataURL = await qrCodeService.generatePatientQRCode(qrData, {
         size: 256,
         color: {
-          dark: '#00D4AA', // Couleur Hedera
+          dark: '#00D4AA', // Hedera color
           light: '#FFFFFF'
         }
       })
 
       setQrCodeUrl(qrCodeDataURL)
     } catch (error) {
-      console.error('Erreur lors de la génération du QR Code:', error)
+  console.error('Error generating QR Code:', error)
     }
   }
 
@@ -96,14 +96,14 @@ export default function PatientIdGeneration() {
         })
 
         if (!shared) {
-          // Fallback: données copiées dans le presse-papiers
+          // Fallback: data copied to clipboard
           setCopied(true)
           setTimeout(() => setCopied(false), 2000)
         }
       } catch (error) {
-        console.error('Erreur lors du partage:', error)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+  console.error('Error sharing:', error)
+  setCopied(true)
+  setTimeout(() => setCopied(false), 2000)
       }
     }
   }
@@ -122,7 +122,7 @@ export default function PatientIdGeneration() {
       <div className="min-h-screen bg-gradient-to-br from-hedera-50 to-medical-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hedera-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
@@ -158,18 +158,18 @@ export default function PatientIdGeneration() {
         {/* Contenu principal */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
-            {/* Message de succès */}
+            {/* Success message */}
             <div className="text-center mb-8">
               <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                CARNET CRÉÉ!
+                RECORD CREATED!
               </h2>
             </div>
 
-            {/* ID et QR Code */}
+            {/* ID and QR Code */}
             <div className="text-center mb-8">
               <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Votre ID Unique:
+                Your Unique ID:
               </h3>
               
               <div className="bg-gray-50 rounded-xl p-6 mb-6">
@@ -179,14 +179,14 @@ export default function PatientIdGeneration() {
                     {qrCodeUrl ? (
                       <img 
                         src={qrCodeUrl} 
-                        alt="QR Code Patient" 
+                        alt="Patient QR Code" 
                         className="w-48 h-48"
                       />
                     ) : (
                       <div className="w-48 h-48 bg-gray-200 rounded-lg flex items-center justify-center">
                         <div className="text-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hedera-500 mx-auto mb-2"></div>
-                          <p className="text-sm text-gray-500">Génération...</p>
+                          <p className="text-sm text-gray-500">Generating...</p>
                         </div>
                       </div>
                     )}
@@ -207,11 +207,11 @@ export default function PatientIdGeneration() {
               </div>
             </div>
 
-            {/* Actions rapides */}
+            {/* Quick actions */}
             <div className="mb-8">
               <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center flex items-center justify-center space-x-2">
                 <Smartphone className="h-5 w-5 text-hedera-500" />
-                <span>Actions rapides:</span>
+                <span>Quick actions:</span>
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <Button
@@ -220,7 +220,7 @@ export default function PatientIdGeneration() {
                   className="flex items-center justify-center space-x-2"
                 >
                   <Download className="h-4 w-4" />
-                  <span>TÉLÉCHARGER</span>
+                  <span>DOWNLOAD</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -230,35 +230,35 @@ export default function PatientIdGeneration() {
                   {copied ? (
                     <>
                       <CheckCircle className="h-4 w-4" />
-                      <span>COPIÉ</span>
+                      <span>COPIED</span>
                     </>
                   ) : (
                     <>
                       <Share2 className="h-4 w-4" />
-                      <span>PARTAGER</span>
+                      <span>SHARE</span>
                     </>
                   )}
                 </Button>
               </div>
             </div>
 
-            {/* Code USSD */}
+            {/* USSD Code */}
             <div className="bg-medical-50 rounded-lg p-4 mb-8">
               <div className="text-center">
                 <h4 className="text-lg font-semibold text-gray-700 mb-2 flex items-center justify-center space-x-2">
                   <Smartphone className="h-5 w-5 text-medical-500" />
-                  <span>Accès USSD:</span>
+                  <span>USSD Access:</span>
                 </h4>
                 <div className="text-xl font-mono font-bold text-medical-600">
                   {ussdCode}
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  Composez ce code sur n'importe quel téléphone
+                  Dial this code on any phone
                 </p>
               </div>
             </div>
 
-            {/* Bouton principal */}
+            {/* Main button */}
             <div className="text-center">
               <Button
                 variant="primary"
@@ -266,7 +266,7 @@ export default function PatientIdGeneration() {
                 onClick={handleAccessDashboard}
                 className="w-full"
               >
-                ACCÉDER MON CARNET
+                ACCESS MY RECORD
               </Button>
             </div>
           </div>

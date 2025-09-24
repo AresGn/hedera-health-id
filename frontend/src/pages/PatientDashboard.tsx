@@ -35,11 +35,11 @@ export default function PatientDashboard() {
     setError('')
 
     try {
-      // Récupérer les données du patient depuis l'API
+      // Retrieve patient data from API
       const patientResponse = await api.getPatientById(patientId)
 
       if (!patientResponse.success || !patientResponse.data) {
-        throw new Error('Patient non trouvé')
+        throw new Error('Patient not found')
       }
 
       const patient = patientResponse.data
@@ -47,40 +47,40 @@ export default function PatientDashboard() {
         patientId: patient.patientId,
         nom: patient.nom,
         prenom: patient.prenom,
-        dateNaissance: new Date(patient.dateNaissance).toLocaleDateString('fr-FR'),
+        dateNaissance: new Date(patient.dateNaissance).toLocaleDateString('en-US'),
         telephone: patient.telephone,
-        email: patient.email || 'Non renseigné',
-        hopitalPrincipal: patient.hopitalPrincipal || 'Non renseigné'
+        email: patient.email || 'Not provided',
+        hopitalPrincipal: patient.hopitalPrincipal || 'Not provided'
       }
 
-      // Récupérer les consultations du patient
+      // Retrieve patient consultations
       const consultationsResponse = await api.getPatientConsultations(patientId)
 
       let consultations: Consultation[] = []
       if (consultationsResponse.success && consultationsResponse.data) {
-        // Vérifier si data est un tableau
+        // Check if data is an array
         const consultationsArray = Array.isArray(consultationsResponse.data)
           ? consultationsResponse.data
           : []
 
         consultations = consultationsArray.map((consultation: any) => ({
           id: consultation.id,
-          date: new Date(consultation.dateConsultation).toLocaleDateString('fr-FR'),
+          date: new Date(consultation.dateConsultation).toLocaleDateString('en-US'),
           medecin: `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}`,
           hopital: consultation.hopital.nom,
           type: consultation.type,
           statut: consultation.statut.toLowerCase(),
-          resume: consultation.notes || consultation.diagnostic || 'Consultation en cours'
+          resume: consultation.notes || consultation.diagnostic || 'Consultation in progress'
         }))
       }
 
-      // Médecins autorisés fictifs (en attendant l'API)
+      // Demo authorized doctors (waiting for API)
       const demoMedecins: MedecinAutorise[] = [
         {
           id: '1',
           nom: 'ADJAHOUI',
           prenom: 'Dr. Jean',
-          specialite: 'Médecine Générale',
+          specialite: 'General Medicine',
           hopital: 'CHU-MEL',
           dateAutorisation: '2024-01-15',
           statut: 'actif'
@@ -89,7 +89,7 @@ export default function PatientDashboard() {
           id: '2',
           nom: 'KOSSOU',
           prenom: 'Dr. Marie',
-          specialite: 'Cardiologie',
+          specialite: 'Cardiology',
           hopital: 'CHU-MEL',
           dateAutorisation: '2024-06-10',
           statut: 'actif'
@@ -101,18 +101,18 @@ export default function PatientDashboard() {
       setMedecinsAutorises(demoMedecins)
 
     } catch (err) {
-      console.error('Erreur chargement données patient:', err)
-      setError('Impossible de charger les données du patient')
+      console.error('Error loading patient data:', err)
+      setError('Unable to load patient data')
 
-      // Fallback vers des données par défaut en cas d'erreur
+      // Fallback to default data in case of error
       const fallbackPatientData: PatientData = {
         patientId: patientId,
         nom: 'PATIENT',
-        prenom: 'Utilisateur',
+        prenom: 'User',
         dateNaissance: '01/01/1990',
         telephone: '+229 XX XX XX XX',
-        email: 'Non renseigné',
-        hopitalPrincipal: 'Non renseigné'
+        email: 'Not provided',
+        hopitalPrincipal: 'Not provided'
       }
       setPatientData(fallbackPatientData)
       setConsultations([])
@@ -127,7 +127,7 @@ export default function PatientDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-hedera-50 to-medical-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hedera-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des données patient...</p>
+          <p className="text-gray-600">Loading patient data...</p>
         </div>
       </div>
     )
@@ -141,7 +141,7 @@ export default function PatientDashboard() {
             {error}
           </div>
           <Button onClick={() => loadPatientData(sessionData?.patientId || '')}>
-            Réessayer
+            Retry
           </Button>
         </div>
       </div>
@@ -193,11 +193,11 @@ export default function PatientDashboard() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8 overflow-x-auto">
               {[
-                { id: 'overview', label: 'Vue d\'ensemble', icon: Activity },
+                { id: 'overview', label: 'Overview', icon: Activity },
                 { id: 'consultations', label: 'Consultations', icon: FileText },
                 { id: 'documents', label: 'Documents', icon: FileText },
                 { id: 'permissions', label: 'Permissions', icon: Shield },
-                { id: 'settings', label: 'Paramètres', icon: Settings }
+                { id: 'settings', label: 'Settings', icon: Settings }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -216,7 +216,7 @@ export default function PatientDashboard() {
           </div>
         </div>
 
-        {/* Contenu des onglets */}
+        {/* Tab content */}
         <div className="space-y-6">
           {activeTab === 'overview' && (
             <PatientOverview 

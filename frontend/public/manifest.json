@@ -1,14 +1,14 @@
 {
   "name": "Hedera Health ID",
   "short_name": "Health ID",
-  "description": "Votre carnet de santé numérique sécurisé sur blockchain Hedera",
+  "description": "Your secure digital health record on Hedera blockchain",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "fr",
+  "lang": "en",
   "dir": "ltr",
   "categories": ["health", "medical", "productivity"],
   "icons": [
@@ -67,21 +67,21 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Page d'accueil Hedera Health ID"
+      "label": "Hedera Health ID Home Page"
     },
     {
       "src": "/screenshots/mobile-dashboard.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Tableau de bord patient mobile"
+      "label": "Mobile Patient Dashboard"
     }
   ],
   "shortcuts": [
     {
-      "name": "Mon Carnet",
-      "short_name": "Carnet",
-      "description": "Accéder à mon carnet de santé",
+      "name": "My Record",
+      "short_name": "Record",
+      "description": "Access my health record",
       "url": "/patient/dashboard",
       "icons": [
         {
@@ -92,9 +92,9 @@
       ]
     },
     {
-      "name": "Scanner QR",
+      "name": "QR Scanner",
       "short_name": "Scanner",
-      "description": "Scanner un QR code patient",
+      "description": "Scan a patient QR code",
       "url": "/medecin/dashboard",
       "icons": [
         {
@@ -107,7 +107,7 @@
     {
       "name": "USSD",
       "short_name": "USSD",
-      "description": "Simulateur USSD pour zones rurales",
+      "description": "USSD simulator for rural areas",
       "url": "/ussd",
       "icons": [
         {

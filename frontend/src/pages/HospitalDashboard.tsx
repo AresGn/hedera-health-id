@@ -68,7 +68,7 @@ interface MedecinInfo {
 export default function HospitalDashboard() {
   const navigate = useNavigate()
   const api = useApi()
-  const [selectedPeriod, setSelectedPeriod] = useState('mois')
+  const [selectedPeriod, setSelectedPeriod] = useState('month')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [stats, setStats] = useState<HospitalStats | null>(null)
@@ -88,12 +88,12 @@ export default function HospitalDashboard() {
     setError('')
 
     try {
-      // Simuler les statistiques pour le moment
+      // Simulate statistics for now
       const mockStats: HospitalStats = {
         patients: { actifs: 1247, croissance: '12%' },
         consultations: { total: 3456, croissance: '8%' },
         economies: { montant: 45000, unite: 'FCFA' },
-        temps: { economise: 120, unite: 'heures' },
+        temps: { economise: 120, unite: 'hours' },
         adoption: {
           systeme: 85,
           medecinsActifs: 24,
@@ -133,20 +133,20 @@ export default function HospitalDashboard() {
         setMedecins(medecinsData)
       }
 
-      // Simuler des activités récentes
+      // Simulate recent activities
       const mockActivites: ActiviteRecente[] = [
         {
           id: '1',
           type: 'patient',
-          titre: 'Nouveau patient enregistré',
-          description: 'Patient BJ2025004 ajouté au système',
+          titre: 'New patient registered',
+          description: 'Patient BJ2025004 added to the system',
           statut: 'success',
           createdAt: new Date().toISOString()
         },
         {
           id: '2',
           type: 'consultation',
-          titre: 'Consultation terminée',
+          titre: 'Consultation completed',
           description: 'Dr. AGBODJAN - Patient BJ2025001',
           statut: 'success',
           createdAt: new Date(Date.now() - 3600000).toISOString()
@@ -156,7 +156,7 @@ export default function HospitalDashboard() {
 
     } catch (error) {
       console.error('Erreur chargement données:', error)
-      setError('Erreur lors du chargement des données')
+  setError('Error loading data')
     } finally {
       setIsLoading(false)
     }
@@ -178,7 +178,7 @@ export default function HospitalDashboard() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -190,7 +190,7 @@ export default function HospitalDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dashboard hôpital...</p>
+          <p className="text-gray-600">Loading hospital dashboard...</p>
         </div>
       </div>
     )
@@ -206,7 +206,7 @@ export default function HospitalDashboard() {
         >
           <Menu className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-900">Dashboard Hôpital</h1>
+  <h1 className="text-lg font-semibold text-gray-900">Hospital Dashboard</h1>
         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
           <Building2 className="h-5 w-5 text-white" />
         </div>
@@ -243,10 +243,10 @@ export default function HospitalDashboard() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
-                  CHU Mère-Enfant Lagune
+                  CHU Mother-Child Lagune
                 </h3>
-                <p className="text-xs text-gray-600">Centre Hospitalier Universitaire</p>
-                <p className="text-xs text-gray-500">Cotonou, Bénin</p>
+                <p className="text-xs text-gray-600">University Hospital Center</p>
+                <p className="text-xs text-gray-500">Cotonou, Benin</p>
               </div>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function HospitalDashboard() {
               }`}
             >
               <BarChart3 className="h-5 w-5" />
-              <span className="font-medium">Vue d'ensemble</span>
+              <span className="font-medium">Overview</span>
             </button>
 
             <button
@@ -286,7 +286,7 @@ export default function HospitalDashboard() {
               }`}
             >
               <Stethoscope className="h-5 w-5" />
-              <span className="font-medium">Médecins</span>
+              <span className="font-medium">Doctors</span>
             </button>
 
             <button
@@ -310,7 +310,7 @@ export default function HospitalDashboard() {
               }`}
             >
               <TrendingUp className="h-5 w-5" />
-              <span className="font-medium">Analyses</span>
+              <span className="font-medium">Analytics</span>
             </button>
 
             <button
@@ -322,7 +322,7 @@ export default function HospitalDashboard() {
               }`}
             >
               <Settings className="h-5 w-5" />
-              <span className="font-medium">Paramètres</span>
+              <span className="font-medium">Settings</span>
             </button>
 
             {/* Déconnexion */}
@@ -332,7 +332,7 @@ export default function HospitalDashboard() {
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-medium">Déconnexion</span>
+                <span className="font-medium">Logout</span>
               </button>
             </div>
           </nav>
@@ -353,9 +353,9 @@ export default function HospitalDashboard() {
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Dashboard Hôpital</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">Hospital Dashboard</h1>
                   <p className="text-gray-600 mt-1">
-                    Gestion et supervision des activités hospitalières
+                    Management and supervision of hospital activities
                   </p>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -364,15 +364,15 @@ export default function HospitalDashboard() {
                     onChange={(e) => setSelectedPeriod(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="jour">Aujourd'hui</option>
-                    <option value="semaine">Cette semaine</option>
-                    <option value="mois">Ce mois</option>
-                    <option value="annee">Cette année</option>
+                    <option value="day">Today</option>
+                    <option value="week">This week</option>
+                    <option value="month">This month</option>
+                    <option value="year">This year</option>
                   </select>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Download className="h-4 w-4 mr-2" />
-                    Exporter
-                  </Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
                 </div>
               </div>
             </div>
@@ -386,10 +386,10 @@ export default function HospitalDashboard() {
                     <div className="bg-white rounded-xl shadow-sm border p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Patients Actifs</p>
+                          <p className="text-sm font-medium text-gray-600">Active Patients</p>
                           <p className="text-2xl font-bold text-gray-900">{stats.patients.actifs}</p>
                           <p className="text-xs text-green-600 mt-1">
-                            +{stats.patients.croissance} ce mois
+                            +{stats.patients.croissance} this month
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -404,7 +404,7 @@ export default function HospitalDashboard() {
                           <p className="text-sm font-medium text-gray-600">Consultations</p>
                           <p className="text-2xl font-bold text-gray-900">{stats.consultations.total}</p>
                           <p className="text-xs text-green-600 mt-1">
-                            +{stats.consultations.croissance} ce mois
+                            +{stats.consultations.croissance} this month
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
@@ -416,12 +416,12 @@ export default function HospitalDashboard() {
                     <div className="bg-white rounded-xl shadow-sm border p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Économies</p>
+                          <p className="text-sm font-medium text-gray-600">Savings</p>
                           <p className="text-2xl font-bold text-gray-900">
                             {stats.economies.montant} {stats.economies.unite}
                           </p>
                           <p className="text-xs text-green-600 mt-1">
-                            Réduction des coûts
+                            Cost reduction
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
@@ -433,12 +433,12 @@ export default function HospitalDashboard() {
                     <div className="bg-white rounded-xl shadow-sm border p-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Temps Économisé</p>
+                          <p className="text-sm font-medium text-gray-600">Time Saved</p>
                           <p className="text-2xl font-bold text-gray-900">
                             {stats.temps.economise} {stats.temps.unite}
                           </p>
                           <p className="text-xs text-green-600 mt-1">
-                            Efficacité améliorée
+                            Improved efficiency
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
@@ -455,10 +455,10 @@ export default function HospitalDashboard() {
                   <div className="bg-white rounded-xl shadow-sm border">
                     <div className="p-6 border-b">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Patients Récents</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Recent Patients</h3>
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4 mr-2" />
-                          Voir tout
+                          View all
                         </Button>
                       </div>
                     </div>
@@ -495,10 +495,10 @@ export default function HospitalDashboard() {
                   <div className="bg-white rounded-xl shadow-sm border">
                     <div className="p-6 border-b">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Médecins Actifs</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Active Doctors</h3>
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4 mr-2" />
-                          Voir tout
+                          View all
                         </Button>
                       </div>
                     </div>
@@ -534,7 +534,7 @@ export default function HospitalDashboard() {
                 {activites.length > 0 && (
                   <div className="bg-white rounded-xl shadow-sm border">
                     <div className="p-6 border-b">
-                      <h3 className="text-lg font-semibold text-gray-900">Activités Récentes</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">Recent Activities</h3>
                     </div>
                     <div className="p-6">
                       <div className="space-y-4">
@@ -557,7 +557,7 @@ export default function HospitalDashboard() {
                               activite.statut === 'warning' ? 'text-yellow-800 bg-yellow-100' :
                               'text-red-800 bg-red-100'
                             }`}>
-                              {activite.statut}
+                                {activite.statut}
                             </span>
                           </div>
                         ))}
@@ -573,19 +573,19 @@ export default function HospitalDashboard() {
               <div className="bg-white rounded-xl shadow-sm border">
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Patients</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Patient Management</h3>
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
-                      Nouveau Patient
+                      New Patient
                     </Button>
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="text-center py-12">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Patients</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Patient Management</h3>
                     <p className="text-gray-500">
-                      Interface de gestion complète des patients sera implémentée ici.
+                      Complete patient management interface will be implemented here.
                     </p>
                   </div>
                 </div>
@@ -597,19 +597,19 @@ export default function HospitalDashboard() {
               <div className="bg-white rounded-xl shadow-sm border">
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Médecins</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Doctor Management</h3>
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
-                      Nouveau Médecin
+                      New Doctor
                     </Button>
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="text-center py-12">
                     <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Médecins</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Doctor Management</h3>
                     <p className="text-gray-500">
-                      Interface de gestion complète des médecins sera implémentée ici.
+                      Complete doctor management interface will be implemented here.
                     </p>
                   </div>
                 </div>
@@ -621,19 +621,19 @@ export default function HospitalDashboard() {
               <div className="bg-white rounded-xl shadow-sm border">
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">Gestion des Consultations</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Consultation Management</h3>
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <Calendar className="h-4 w-4 mr-2" />
-                      Planifier
+                      Schedule
                     </Button>
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Gestion des Consultations</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Consultation Management</h3>
                     <p className="text-gray-500">
-                      Interface de gestion complète des consultations sera implémentée ici.
+                      Complete consultation management interface will be implemented here.
                     </p>
                   </div>
                 </div>
@@ -644,14 +644,14 @@ export default function HospitalDashboard() {
             {activeTab === 'analytics' && (
               <div className="bg-white rounded-xl shadow-sm border">
                 <div className="p-6 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">Analyses et Rapports</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Analytics & Reports</h3>
                 </div>
                 <div className="p-6">
                   <div className="text-center py-12">
                     <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Analyses Avancées</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Analytics</h3>
                     <p className="text-gray-500">
-                      Tableaux de bord analytiques et rapports détaillés seront implémentés ici.
+                      Analytical dashboards and detailed reports will be implemented here.
                     </p>
                   </div>
                 </div>
@@ -662,14 +662,14 @@ export default function HospitalDashboard() {
             {activeTab === 'settings' && (
               <div className="bg-white rounded-xl shadow-sm border">
                 <div className="p-6 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">Paramètres de l'Hôpital</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Hospital Settings</h3>
                 </div>
                 <div className="p-6">
                   <div className="text-center py-12">
                     <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Configuration</h3>
                     <p className="text-gray-500">
-                      Paramètres de configuration de l'hôpital seront implémentés ici.
+                      Hospital configuration settings will be implemented here.
                     </p>
                   </div>
                 </div>

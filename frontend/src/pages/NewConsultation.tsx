@@ -62,40 +62,40 @@ interface Medicament {
 }
 
 const typesConsultation = [
-  { value: 'consultation_generale', label: 'Consultation générale' },
-  { value: 'urgence', label: 'Urgence' },
-  { value: 'suivi', label: 'Suivi médical' },
-  { value: 'suivi_cardiologique', label: 'Suivi cardiologique' },
-  { value: 'suivi_diabetique', label: 'Suivi diabétique' },
-  { value: 'pediatrie', label: 'Pédiatrie' },
-  { value: 'gynecologie', label: 'Gynécologie' },
-  { value: 'dermatologie', label: 'Dermatologie' },
-  { value: 'ophtalmologie', label: 'Ophtalmologie' },
-  { value: 'oto_rhino_laryngologie', label: 'ORL' }
+  { value: 'consultation_generale', label: 'General consultation' },
+  { value: 'urgence', label: 'Emergency' },
+  { value: 'suivi', label: 'Medical follow-up' },
+  { value: 'suivi_cardiologique', label: 'Cardiology follow-up' },
+  { value: 'suivi_diabetique', label: 'Diabetes follow-up' },
+  { value: 'pediatrie', label: 'Pediatrics' },
+  { value: 'gynecologie', label: 'Gynecology' },
+  { value: 'dermatologie', label: 'Dermatology' },
+  { value: 'ophtalmologie', label: 'Ophthalmology' },
+  { value: 'oto_rhino_laryngologie', label: 'ENT' }
 ]
 
 const examensCommuns = [
-  'Prise de sang',
+  'Blood test',
   'ECG',
-  'Radiographie thoracique',
-  'Échographie abdominale',
-  'Scanner',
-  'IRM',
-  'Échocardiographie',
-  'Test de glycémie',
-  'Analyse d\'urine',
-  'Biopsie'
+  'Chest X-ray',
+  'Abdominal ultrasound',
+  'CT scan',
+  'MRI',
+  'Echocardiography',
+  'Blood sugar test',
+  'Urine analysis',
+  'Biopsy'
 ]
 
 const medicamentsCommuns = [
-  { nom: 'Paracétamol', dosages: ['500mg', '1000mg'] },
-  { nom: 'Ibuprofène', dosages: ['200mg', '400mg', '600mg'] },
-  { nom: 'Amoxicilline', dosages: ['250mg', '500mg', '1000mg'] },
+  { nom: 'Paracetamol', dosages: ['500mg', '1000mg'] },
+  { nom: 'Ibuprofen', dosages: ['200mg', '400mg', '600mg'] },
+  { nom: 'Amoxicillin', dosages: ['250mg', '500mg', '1000mg'] },
   { nom: 'Amlodipine', dosages: ['5mg', '10mg'] },
-  { nom: 'Metformine', dosages: ['500mg', '850mg', '1000mg'] },
-  { nom: 'Aspirine', dosages: ['75mg', '100mg', '300mg'] },
-  { nom: 'Oméprazole', dosages: ['20mg', '40mg'] },
-  { nom: 'Atorvastatine', dosages: ['10mg', '20mg', '40mg'] }
+  { nom: 'Metformin', dosages: ['500mg', '850mg', '1000mg'] },
+  { nom: 'Aspirin', dosages: ['75mg', '100mg', '300mg'] },
+  { nom: 'Omeprazole', dosages: ['20mg', '40mg'] },
+  { nom: 'Atorvastatin', dosages: ['10mg', '20mg', '40mg'] }
 ]
 
 export default function NewConsultation() {
@@ -232,22 +232,22 @@ export default function NewConsultation() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.type) newErrors.type = 'Type de consultation requis'
-    if (!formData.motif.trim()) newErrors.motif = 'Motif de consultation requis'
-    if (!formData.diagnostic.trim()) newErrors.diagnostic = 'Diagnostic requis'
+    if (!formData.type) newErrors.type = 'Consultation type required'
+    if (!formData.motif.trim()) newErrors.motif = 'Consultation reason required'
+    if (!formData.diagnostic.trim()) newErrors.diagnostic = 'Diagnosis required'
 
-    // Validation des données vitales (optionnelles mais format correct si renseignées)
+    // Vital data validation (optional but correct format if provided)
     if (formData.donneesVitales.poids && isNaN(Number(formData.donneesVitales.poids))) {
-      newErrors['donneesVitales.poids'] = 'Poids invalide'
+      newErrors['donneesVitales.poids'] = 'Invalid weight'
     }
     if (formData.donneesVitales.taille && isNaN(Number(formData.donneesVitales.taille))) {
-      newErrors['donneesVitales.taille'] = 'Taille invalide'
+      newErrors['donneesVitales.taille'] = 'Invalid height'
     }
     if (formData.donneesVitales.temperature && isNaN(Number(formData.donneesVitales.temperature))) {
-      newErrors['donneesVitales.temperature'] = 'Température invalide'
+      newErrors['donneesVitales.temperature'] = 'Invalid temperature'
     }
     if (formData.donneesVitales.pouls && isNaN(Number(formData.donneesVitales.pouls))) {
-      newErrors['donneesVitales.pouls'] = 'Pouls invalide'
+      newErrors['donneesVitales.pouls'] = 'Invalid pulse'
     }
 
     setErrors(newErrors)

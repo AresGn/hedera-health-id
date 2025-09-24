@@ -62,32 +62,32 @@ export default function MedecinDashboardNew() {
   // Données fictives enrichies
   const stats: StatCard[] = [
     {
-      title: 'Patients Aujourd\'hui',
-      value: '12',
-      change: '+3 vs hier',
+      title: "Patients Today",
+      value: "12",
+      change: "+3 vs yesterday",
       icon: <Users className="h-6 w-6" />,
-      color: 'bg-blue-500'
+      color: "bg-blue-500"
     },
     {
-      title: 'Consultations',
-      value: '8',
-      change: '+2 vs hier',
+      title: "Consultations",
+      value: "8",
+      change: "+2 vs yesterday",
       icon: <Stethoscope className="h-6 w-6" />,
-      color: 'bg-green-500'
+      color: "bg-green-500"
     },
     {
-      title: 'Urgences',
-      value: '2',
-      change: 'Stable',
+      title: "Emergencies",
+      value: "2",
+      change: "Stable",
       icon: <AlertTriangle className="h-6 w-6" />,
-      color: 'bg-red-500'
+      color: "bg-red-500"
     },
     {
-      title: 'Satisfaction',
-      value: '98%',
-      change: '+2% ce mois',
+      title: "Satisfaction",
+      value: "98%",
+      change: "+2% this month",
       icon: <Heart className="h-6 w-6" />,
-      color: 'bg-purple-500'
+      color: "bg-purple-500"
     }
   ]
 
@@ -97,7 +97,7 @@ export default function MedecinDashboardNew() {
       nom: 'KOUASSI',
       prenom: 'Marie',
       age: 45,
-      status: 'En consultation',
+      status: 'In consultation',
       lastVisit: '10:30',
       urgence: false
     },
@@ -106,7 +106,7 @@ export default function MedecinDashboardNew() {
       nom: 'DOSSOU',
       prenom: 'Jean',
       age: 32,
-      status: 'En attente',
+      status: 'Waiting',
       lastVisit: '11:00',
       urgence: true
     },
@@ -115,7 +115,7 @@ export default function MedecinDashboardNew() {
       nom: 'AGBODJAN',
       prenom: 'Fatou',
       age: 28,
-      status: 'Terminé',
+      status: 'Completed',
       lastVisit: '09:45',
       urgence: false
     },
@@ -124,7 +124,7 @@ export default function MedecinDashboardNew() {
       nom: 'TOSSOU',
       prenom: 'Paul',
       age: 67,
-      status: 'Programmé',
+      status: 'Scheduled',
       lastVisit: '14:30',
       urgence: false
     }
@@ -136,20 +136,20 @@ export default function MedecinDashboardNew() {
       patient: 'KOUASSI Marie',
       time: '14:00',
       type: 'Consultation',
-      status: 'confirmé'
+      status: 'confirmed'
     },
     {
       id: '2',
       patient: 'DOSSOU Jean',
       time: '14:30',
-      type: 'Suivi',
-      status: 'en_attente'
+      type: 'Follow-up',
+      status: 'waiting'
     },
     {
       id: '3',
       patient: 'AGBODJAN Fatou',
       time: '15:00',
-      type: 'Urgence',
+      type: 'Emergency',
       status: 'urgent'
     }
   ]
@@ -206,13 +206,13 @@ export default function MedecinDashboardNew() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'En consultation': return 'bg-blue-100 text-blue-800'
-      case 'En attente': return 'bg-yellow-100 text-yellow-800'
-      case 'Terminé': return 'bg-green-100 text-green-800'
-      case 'Programmé': return 'bg-purple-100 text-purple-800'
+      case 'In consultation': return 'bg-blue-100 text-blue-800'
+      case 'Waiting': return 'bg-yellow-100 text-yellow-800'
+      case 'Completed': return 'bg-green-100 text-green-800'
+      case 'Scheduled': return 'bg-purple-100 text-purple-800'
       case 'urgent': return 'bg-red-100 text-red-800'
-      case 'confirmé': return 'bg-green-100 text-green-800'
-      case 'en_attente': return 'bg-yellow-100 text-yellow-800'
+      case 'confirmed': return 'bg-green-100 text-green-800'
+      case 'waiting': return 'bg-yellow-100 text-yellow-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -237,7 +237,7 @@ export default function MedecinDashboardNew() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dashboard...</p>
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     )

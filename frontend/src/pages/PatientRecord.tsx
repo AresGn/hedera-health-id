@@ -74,7 +74,7 @@ export default function PatientRecord() {
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    // Récupérer les données du patient depuis la navigation ou l'ID
+    // Retrieve patient data from navigation or ID
     const patientId = location.state?.patientId || location.state?.patientData?.patientId
     
     if (patientId) {
@@ -87,7 +87,7 @@ export default function PatientRecord() {
   const loadPatientRecord = async (_patientId: string) => {
     setIsLoading(true)
     try {
-      // Simulation des données - en production, appeler l'API
+      // Simulate data - in production, call the API
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       setPatientData({
@@ -99,10 +99,10 @@ export default function PatientRecord() {
         age: 34,
         telephone: '+229 97 XX XX XX',
         email: 'adjoa.kossou@email.com',
-        adresse: 'Quartier Akpakpa, Rue 123',
+        adresse: 'Akpakpa District, Street 123',
         ville: 'Cotonou',
         groupeSanguin: 'A+',
-        allergies: ['Pénicilline', 'Arachides'],
+        allergies: ['Penicillin', 'Peanuts'],
         maladiesChroniques: ['Hypertension'],
         contactUrgence: '+229 96 XX XX XX',
         hopitalPrincipal: 'CHU-MEL'
@@ -156,8 +156,8 @@ export default function PatientRecord() {
         {
           id: '1',
           type: 'allergie',
-          titre: 'Allergie Pénicilline',
-          description: 'Réaction allergique sévère à la pénicilline et dérivés',
+          titre: 'Penicillin Allergy',
+          description: 'Severe allergic reaction to penicillin and derivatives',
           severite: 'elevee',
           dateCreation: '2024-03-15',
           isActive: true
@@ -165,15 +165,15 @@ export default function PatientRecord() {
         {
           id: '2',
           type: 'maladie_chronique',
-          titre: 'Hypertension artérielle',
-          description: 'Hypertension diagnostiquée en 2023, sous traitement',
+          titre: 'Arterial Hypertension',
+          description: 'Hypertension diagnosed in 2023, under treatment',
           severite: 'moyenne',
           dateCreation: '2023-08-20',
           isActive: true
         }
       ])
     } catch (error) {
-      console.error('Erreur chargement dossier patient:', error)
+  console.error('Error loading patient record:', error)
     } finally {
       setIsLoading(false)
     }
@@ -200,7 +200,7 @@ export default function PatientRecord() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-GB', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -227,7 +227,7 @@ export default function PatientRecord() {
       <div className="min-h-screen bg-gradient-to-br from-medical-50 to-hedera-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medical-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dossier patient...</p>
+          <p className="text-gray-600">Loading patient record...</p>
         </div>
       </div>
     )
@@ -238,9 +238,9 @@ export default function PatientRecord() {
       <div className="min-h-screen bg-gradient-to-br from-medical-50 to-hedera-50 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Dossier patient non trouvé</p>
+          <p className="text-gray-600">Patient record not found</p>
           <Button onClick={() => navigate('/medecin/dashboard')} className="mt-4">
-            Retour au dashboard
+            Back to dashboard
           </Button>
         </div>
       </div>
@@ -319,9 +319,9 @@ export default function PatientRecord() {
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               {[
-                { id: 'overview', label: 'Vue d\'ensemble', icon: User },
+                { id: 'overview', label: "Overview", icon: User },
                 { id: 'consultations', label: 'Consultations', icon: Stethoscope },
-                { id: 'alertes', label: 'Alertes médicales', icon: AlertTriangle },
+                { id: 'alertes', label: 'Medical Alerts', icon: AlertTriangle },
                 { id: 'documents', label: 'Documents', icon: FileText }
               ].map((tab) => (
                 <button
@@ -348,7 +348,7 @@ export default function PatientRecord() {
               {/* Informations personnelles */}
               <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800">Informations Personnelles</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">Personal Information</h3>
                   {isEditing && (
                     <Button variant="primary" size="sm">
                       <CheckCircle className="h-4 w-4 mr-2" />
@@ -360,11 +360,11 @@ export default function PatientRecord() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Nom complet</label>
+                      <label className="text-sm font-medium text-gray-500">Full Name</label>
                       {isEditing ? (
                         <div className="grid grid-cols-2 gap-2">
-                          <Input value={patientData.prenom} placeholder="Prénom" />
-                          <Input value={patientData.nom} placeholder="Nom" />
+                          <Input value={patientData.prenom} placeholder="First Name" />
+                          <Input value={patientData.nom} placeholder="Last Name" />
                         </div>
                       ) : (
                         <p className="text-lg font-semibold">{patientData.prenom} {patientData.nom}</p>
@@ -372,16 +372,16 @@ export default function PatientRecord() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Date de naissance</label>
+                      <label className="text-sm font-medium text-gray-500">Date of Birth</label>
                       {isEditing ? (
                         <Input type="date" value={patientData.dateNaissance} />
                       ) : (
-                        <p className="text-lg">{formatDate(patientData.dateNaissance)} ({calculateAge(patientData.dateNaissance)} ans)</p>
+                        <p className="text-lg">{formatDate(patientData.dateNaissance)} ({calculateAge(patientData.dateNaissance)} years)</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Téléphone</label>
+                      <label className="text-sm font-medium text-gray-500">Phone</label>
                       {isEditing ? (
                         <Input value={patientData.telephone} icon={<Phone className="h-4 w-4" />} />
                       ) : (
@@ -407,40 +407,40 @@ export default function PatientRecord() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Adresse</label>
+                      <label className="text-sm font-medium text-gray-500">Address</label>
                       {isEditing ? (
                         <Input value={patientData.adresse || ''} icon={<MapPin className="h-4 w-4" />} />
                       ) : (
                         <p className="text-lg flex items-center space-x-2">
                           <MapPin className="h-4 w-4 text-gray-400" />
-                          <span>{patientData.adresse || 'Non renseignée'}</span>
+                          <span>{patientData.adresse || 'Not provided'}</span>
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Ville</label>
+                      <label className="text-sm font-medium text-gray-500">City</label>
                       {isEditing ? (
                         <Input value={patientData.ville || ''} />
                       ) : (
-                        <p className="text-lg">{patientData.ville || 'Non renseignée'}</p>
+                        <p className="text-lg">{patientData.ville || 'Not provided'}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Contact d'urgence</label>
+                      <label className="text-sm font-medium text-gray-500">Emergency Contact</label>
                       {isEditing ? (
                         <Input value={patientData.contactUrgence || ''} icon={<Phone className="h-4 w-4" />} />
                       ) : (
                         <p className="text-lg flex items-center space-x-2">
                           <Phone className="h-4 w-4 text-gray-400" />
-                          <span>{patientData.contactUrgence || 'Non renseigné'}</span>
+                          <span>{patientData.contactUrgence || 'Not provided'}</span>
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Hôpital principal</label>
+                      <label className="text-sm font-medium text-gray-500">Main Hospital</label>
                       <p className="text-lg">{patientData.hopitalPrincipal}</p>
                     </div>
                   </div>
@@ -450,15 +450,15 @@ export default function PatientRecord() {
               {/* Informations médicales */}
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Informations Médicales</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Medical Information</h3>
 
                   <div className="space-y-4">
                     <div className="bg-red-50 p-4 rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <Heart className="h-5 w-5 text-red-500" />
-                        <span className="font-medium text-red-700">Groupe sanguin</span>
+                        <span className="font-medium text-red-700">Blood Group</span>
                       </div>
-                      <p className="text-2xl font-bold text-red-600">{patientData.groupeSanguin || 'Non déterminé'}</p>
+                      <p className="text-2xl font-bold text-red-600">{patientData.groupeSanguin || 'Not determined'}</p>
                     </div>
 
                     <div className="bg-yellow-50 p-4 rounded-lg">
@@ -475,14 +475,14 @@ export default function PatientRecord() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-yellow-600">Aucune allergie connue</p>
+                        <p className="text-yellow-600">No known allergies</p>
                       )}
                     </div>
 
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <Activity className="h-5 w-5 text-blue-500" />
-                        <span className="font-medium text-blue-700">Maladies chroniques</span>
+                        <span className="font-medium text-blue-700">Chronic Diseases</span>
                       </div>
                       {patientData.maladiesChroniques.length > 0 ? (
                         <div className="space-y-1">
@@ -493,7 +493,7 @@ export default function PatientRecord() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-blue-600">Aucune maladie chronique</p>
+                        <p className="text-blue-600">No chronic diseases</p>
                       )}
                     </div>
                   </div>
@@ -501,24 +501,24 @@ export default function PatientRecord() {
 
                 {/* Statistiques rapides */}
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Résumé Médical</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Medical Summary</h3>
 
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Consultations totales</span>
+                      <span className="text-sm text-gray-600">Total consultations</span>
                       <span className="font-bold text-2xl text-medical-600">{consultations.length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Dernière consultation</span>
+                      <span className="text-sm text-gray-600">Last consultation</span>
                       <span className="font-medium text-sm">
                         {consultations.length > 0
                           ? new Date(consultations[0].date).toLocaleDateString('fr-FR')
-                          : 'Aucune'
+                          : 'None'
                         }
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Alertes actives</span>
+                      <span className="text-sm text-gray-600">Active alerts</span>
                       <span className="font-bold text-2xl text-red-600">
                         {alertesMedicales.filter(a => a.isActive).length}
                       </span>

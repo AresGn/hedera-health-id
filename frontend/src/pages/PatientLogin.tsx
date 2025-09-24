@@ -27,7 +27,7 @@ export default function PatientLogin() {
       ...prev,
       [name]: value
     }))
-    // Effacer l'erreur quand l'utilisateur tape
+    // Clear error when user types
     if (error) setError('')
   }
 
@@ -37,16 +37,16 @@ export default function PatientLogin() {
     setError('')
 
     try {
-      // Validation basique
+      // Basic validation
       if (!formData.patientId.trim()) {
-        throw new Error('Veuillez saisir votre ID patient')
+        throw new Error('Please enter your patient ID')
       }
       if (!formData.password.trim()) {
-        throw new Error('Veuillez saisir votre mot de passe')
+        throw new Error('Please enter your password')
       }
 
-      // Appel API d'authentification
-      console.log('🔄 Tentative d\'authentification pour:', formData.patientId)
+      // Authentication API call
+      console.log('🔄 Authentication attempt for:', formData.patientId)
 
       const response = await api.authenticatePatient({
         patientId: formData.patientId,
@@ -54,17 +54,17 @@ export default function PatientLogin() {
       })
 
       if (!response.success) {
-        throw new Error(response.error || 'Erreur d\'authentification')
+        throw new Error(response.error || 'Authentication error')
       }
 
-      console.log('✅ Authentification réussie:', response.data)
+      console.log('✅ Authentication successful:', response.data)
 
-      // Vérifier que les données sont présentes
+      // Check that data is present
       if (!response.data?.patient?.patientId) {
-        throw new Error('Données patient manquantes dans la réponse')
+        throw new Error('Patient data missing in response')
       }
 
-      // Stocker les informations de session
+      // Store session information
       localStorage.setItem('patient_session', JSON.stringify({
         patientId: response.data.patient.patientId,
         token: response.data.token,
@@ -73,10 +73,10 @@ export default function PatientLogin() {
         loginTime: new Date().toISOString()
       }))
 
-      // Rediriger vers le tableau de bord
+      // Redirect to dashboard
       navigate('/patient/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de connexion')
+      setError(err instanceof Error ? err.message : 'Connection error')
     } finally {
       setIsLoading(false)
     }
@@ -94,15 +94,15 @@ export default function PatientLogin() {
           <h1 className="text-2xl font-bold text-gray-800">HEDERA HEALTH ID</h1>
         </div>
 
-        {/* Formulaire de connexion */}
+        {/* Login form */}
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-hedera-100 rounded-full mb-4">
                 <User className="h-8 w-8 text-hedera-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Connexion Patient</h2>
-              <p className="text-gray-600">Accédez à votre carnet de santé</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Patient Login</h2>
+              <p className="text-gray-600">Access your health record</p>
             </div>
 
             {error && (
@@ -115,7 +115,7 @@ export default function PatientLogin() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="patientId" className="block text-sm font-medium text-gray-800 mb-2">
-                  ID Patient
+                  Patient ID
                 </label>
                 <Input
                   id="patientId"
@@ -128,13 +128,13 @@ export default function PatientLogin() {
                   icon={<User className="h-4 w-4" />}
                 />
                 <p className="text-xs text-gray-600 mt-1">
-                  Votre identifiant unique (ex: BJ2025001)
+                  Your unique identifier (e.g.: BJ2025001)
                 </p>
               </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-800 mb-2">
-                  Mot de passe
+                  Password
                 </label>
                 <div className="relative">
                   <Input
@@ -163,10 +163,10 @@ export default function PatientLogin() {
                     type="checkbox"
                     className="h-4 w-4 text-hedera-500 focus:ring-hedera-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Se souvenir de moi</span>
+                  <span className="ml-2 text-sm text-gray-700">Remember me</span>
                 </label>
                 <Link to="/patient/forgot-password" className="text-sm text-hedera-600 hover:text-hedera-700">
-                  Mot de passe oublié ?
+                  Forgot password?
                 </Link>
               </div>
 
@@ -176,18 +176,18 @@ export default function PatientLogin() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Connexion...' : 'Se connecter'}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="text-center">
                 <p className="text-sm text-gray-700 mb-4">
-                  Vous n'avez pas encore de carnet ?
+                  Don't have a health record yet?
                 </p>
                 <Link to="/patient/register">
                   <Button variant="outline" className="w-full">
-                    Créer mon carnet de santé
+                    Create my health record
                   </Button>
                 </Link>
               </div>
@@ -195,7 +195,7 @@ export default function PatientLogin() {
 
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-600">
-                Accès USSD disponible : <span className="font-mono">*789*[ID]#</span>
+                USSD access available: <span className="font-mono">*789*[ID]#</span>
               </p>
             </div>
           </div>

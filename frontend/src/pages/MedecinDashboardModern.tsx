@@ -217,7 +217,7 @@ const MedecinDashboardModern = () => {
   // }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -229,14 +229,14 @@ const MedecinDashboardModern = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dashboard...</p>
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     )
   }
 
   if (!medecin) {
-    return null
+  return null
   }
 
   return (
@@ -249,7 +249,7 @@ const MedecinDashboardModern = () => {
         >
           <Menu className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-900">Dashboard Médecin</h1>
+  <h1 className="text-lg font-semibold text-gray-900">Doctor Dashboard</h1>
         <button
           onClick={() => setShowQRScanner(true)}
           className="p-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
@@ -308,7 +308,7 @@ const MedecinDashboardModern = () => {
               }`}
             >
               <BarChart3 className="h-5 w-5" />
-              <span className="font-medium">Vue d'ensemble</span>
+              <span className="font-medium">Overview</span>
             </button>
 
             <button
@@ -320,7 +320,7 @@ const MedecinDashboardModern = () => {
               }`}
             >
               <Users className="h-5 w-5" />
-              <span className="font-medium">Mes Patients</span>
+              <span className="font-medium">My Patients</span>
             </button>
 
             <button
@@ -344,7 +344,7 @@ const MedecinDashboardModern = () => {
               }`}
             >
               <Calendar className="h-5 w-5" />
-              <span className="font-medium">Planning</span>
+              <span className="font-medium">Schedule</span>
             </button>
 
             <div className="border-t pt-4 mt-4">
@@ -353,7 +353,7 @@ const MedecinDashboardModern = () => {
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <QrCode className="h-5 w-5" />
-                <span className="font-medium">Scanner QR Code</span>
+                <span className="font-medium">Scan QR Code</span>
               </button>
 
               <Link
@@ -361,7 +361,7 @@ const MedecinDashboardModern = () => {
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                <span className="font-medium">Nouvelle Consultation</span>
+                <span className="font-medium">New Consultation</span>
               </Link>
             </div>
 
@@ -371,7 +371,7 @@ const MedecinDashboardModern = () => {
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-medium">Déconnexion</span>
+                <span className="font-medium">Logout</span>
               </button>
             </div>
           </nav>
@@ -393,10 +393,10 @@ const MedecinDashboardModern = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
-                    Bonjour, Dr. {medecin.prenom} {medecin.nom}
+                    Hello, Dr. {medecin.prenom} {medecin.nom}
                   </h1>
                   <p className="text-gray-600 mt-1">
-                    {new Date().toLocaleDateString('fr-FR', {
+                    {new Date().toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
@@ -410,12 +410,12 @@ const MedecinDashboardModern = () => {
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <QrCode className="h-4 w-4 mr-2" />
-                    Scanner QR Code
+                    Scan QR Code
                   </Button>
                   <Link to="/medecin/consultation/new">
                     <Button className="bg-green-600 hover:bg-green-700 text-white">
                       <Plus className="h-4 w-4 mr-2" />
-                      Nouvelle Consultation
+                      New Consultation
                     </Button>
                   </Link>
                 </div>
@@ -430,7 +430,7 @@ const MedecinDashboardModern = () => {
                   <div className="bg-white rounded-xl shadow-sm border p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Patients aujourd'hui</p>
+                        <p className="text-sm font-medium text-gray-600">Patients today</p>
                         <p className="text-2xl font-bold text-gray-900">{stats.patientsToday}</p>
                       </div>
                       <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -439,14 +439,14 @@ const MedecinDashboardModern = () => {
                     </div>
                     <div className="mt-4 flex items-center">
                       <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+12% vs hier</span>
+                      <span className="text-sm text-green-600">+12% vs yesterday</span>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Consultations/semaine</p>
+                        <p className="text-sm font-medium text-gray-600">Consultations/week</p>
                         <p className="text-2xl font-bold text-gray-900">{stats.consultationsWeek}</p>
                       </div>
                       <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
@@ -455,14 +455,14 @@ const MedecinDashboardModern = () => {
                     </div>
                     <div className="mt-4 flex items-center">
                       <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+8% vs semaine dernière</span>
+                      <span className="text-sm text-green-600">+8% vs last week</span>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Cas d'urgence</p>
+                        <p className="text-sm font-medium text-gray-600">Emergency cases</p>
                         <p className="text-2xl font-bold text-gray-900">{stats.emergencyCases}</p>
                       </div>
                       <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
@@ -470,14 +470,14 @@ const MedecinDashboardModern = () => {
                       </div>
                     </div>
                     <div className="mt-4 flex items-center">
-                      <span className="text-sm text-gray-600">Aujourd'hui</span>
+                      <span className="text-sm text-gray-600">Today</span>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Temps moyen</p>
+                        <p className="text-sm font-medium text-gray-600">Average time</p>
                         <p className="text-2xl font-bold text-gray-900">{stats.avgConsultationTime}min</p>
                       </div>
                       <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
@@ -485,7 +485,7 @@ const MedecinDashboardModern = () => {
                       </div>
                     </div>
                     <div className="mt-4 flex items-center">
-                      <span className="text-sm text-gray-600">Par consultation</span>
+                      <span className="text-sm text-gray-600">Per consultation</span>
                     </div>
                   </div>
 
@@ -501,14 +501,14 @@ const MedecinDashboardModern = () => {
                     </div>
                     <div className="mt-4 flex items-center">
                       <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+3% ce mois</span>
+                      <span className="text-sm text-green-600">+3% this month</span>
                     </div>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm border p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Rapports en attente</p>
+                        <p className="text-sm font-medium text-gray-600">Pending reports</p>
                         <p className="text-2xl font-bold text-gray-900">{stats.pendingReports}</p>
                       </div>
                       <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
@@ -516,7 +516,7 @@ const MedecinDashboardModern = () => {
                       </div>
                     </div>
                     <div className="mt-4 flex items-center">
-                      <span className="text-sm text-gray-600">À finaliser</span>
+                      <span className="text-sm text-gray-600">To finalize</span>
                     </div>
                   </div>
                 </div>
@@ -527,12 +527,12 @@ const MedecinDashboardModern = () => {
                   <div className="bg-white rounded-xl shadow-sm border">
                     <div className="p-6 border-b">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Patients Récents</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Recent Patients</h3>
                         <Link
                           to="/medecin/patients"
                           className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                         >
-                          Voir tous
+                          View all
                         </Link>
                       </div>
                     </div>
@@ -552,14 +552,14 @@ const MedecinDashboardModern = () => {
                                   ID: {patient.patientId}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  Dernière visite: {formatDate(patient.lastConsultation)}
+                                  Last visit: {formatDate(patient.lastConsultation)}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
                                 {patient.status === 'stable' ? 'Stable' :
-                                 patient.status === 'attention' ? 'Attention' : 'Critique'}
+                                 patient.status === 'attention' ? 'Attention' : 'Critical'}
                               </span>
                               <ChevronRight className="h-4 w-4 text-gray-400" />
                             </div>
@@ -573,12 +573,12 @@ const MedecinDashboardModern = () => {
                   <div className="bg-white rounded-xl shadow-sm border">
                     <div className="p-6 border-b">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Rendez-vous Aujourd'hui</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Today's Appointments</h3>
                         <Link
                           to="/medecin/planning"
                           className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                         >
-                          Planning complet
+                          Full schedule
                         </Link>
                       </div>
                     </div>
@@ -624,7 +624,7 @@ const MedecinDashboardModern = () => {
 
                 {/* Actions Rapides */}
                 <div className="bg-white rounded-xl shadow-sm border p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions Rapides</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <button
                       onClick={() => setShowQRScanner(true)}
@@ -632,8 +632,8 @@ const MedecinDashboardModern = () => {
                     >
                       <QrCode className="h-6 w-6 text-blue-600" />
                       <div className="text-left">
-                        <p className="font-medium text-gray-900">Scanner QR Code</p>
-                        <p className="text-sm text-gray-600">Accéder au dossier patient</p>
+                        <p className="font-medium text-gray-900">Scan QR Code</p>
+                        <p className="text-sm text-gray-600">Access patient record</p>
                       </div>
                     </button>
 
@@ -643,8 +643,8 @@ const MedecinDashboardModern = () => {
                     >
                       <Plus className="h-6 w-6 text-green-600" />
                       <div className="text-left">
-                        <p className="font-medium text-gray-900">Nouvelle Consultation</p>
-                        <p className="text-sm text-gray-600">Créer un nouveau dossier</p>
+                        <p className="font-medium text-gray-900">New Consultation</p>
+                        <p className="text-sm text-gray-600">Create new record</p>
                       </div>
                     </Link>
 
@@ -654,8 +654,8 @@ const MedecinDashboardModern = () => {
                     >
                       <Users className="h-6 w-6 text-purple-600" />
                       <div className="text-left">
-                        <p className="font-medium text-gray-900">Mes Patients</p>
-                        <p className="text-sm text-gray-600">Gérer les dossiers</p>
+                        <p className="font-medium text-gray-900">My Patients</p>
+                        <p className="text-sm text-gray-600">Manage records</p>
                       </div>
                     </Link>
 
@@ -665,8 +665,8 @@ const MedecinDashboardModern = () => {
                     >
                       <Calendar className="h-6 w-6 text-orange-600" />
                       <div className="text-left">
-                        <p className="font-medium text-gray-900">Planning</p>
-                        <p className="text-sm text-gray-600">Gérer les rendez-vous</p>
+                        <p className="font-medium text-gray-900">Schedule</p>
+                        <p className="text-sm text-gray-600">Manage appointments</p>
                       </div>
                     </Link>
                   </div>
@@ -677,12 +677,12 @@ const MedecinDashboardModern = () => {
             {/* Autres onglets - Placeholder pour l'instant */}
             {activeTab === 'patients' && (
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Gestion des Patients</h3>
-                <p className="text-gray-600">Interface de gestion des patients en cours de développement...</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Management</h3>
+                <p className="text-gray-600">Patient management interface under development...</p>
                 <div className="mt-4">
                   <Link to="/medecin/patients">
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                      Accéder à la liste complète
+                      Access full list
                     </Button>
                   </Link>
                 </div>
@@ -691,12 +691,12 @@ const MedecinDashboardModern = () => {
 
             {activeTab === 'consultations' && (
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Mes Consultations</h3>
-                <p className="text-gray-600">Interface de gestion des consultations en cours de développement...</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">My Consultations</h3>
+                <p className="text-gray-600">Consultation management interface under development...</p>
                 <div className="mt-4">
                   <Link to="/medecin/consultation/new">
                     <Button className="bg-green-600 hover:bg-green-700 text-white">
-                      Nouvelle Consultation
+                      New Consultation
                     </Button>
                   </Link>
                 </div>
@@ -705,11 +705,11 @@ const MedecinDashboardModern = () => {
 
             {activeTab === 'calendar' && (
               <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Planning</h3>
-                <p className="text-gray-600">Interface de planning en cours de développement...</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Schedule</h3>
+                <p className="text-gray-600">Schedule interface under development...</p>
                 <div className="mt-4">
                   <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                    Voir le planning complet
+                    View full schedule
                   </Button>
                 </div>
               </div>
@@ -724,7 +724,7 @@ const MedecinDashboardModern = () => {
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Scanner QR Code Patient</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Scan Patient QR Code</h3>
                 <button
                   onClick={() => setShowQRScanner(false)}
                   className="p-2 rounded-md text-gray-400 hover:bg-gray-100"

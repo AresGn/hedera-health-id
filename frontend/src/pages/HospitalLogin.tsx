@@ -39,14 +39,14 @@ export default function HospitalLogin() {
     try {
       // Validation basique
       if (!formData.adminId.trim()) {
-        throw new Error('Veuillez saisir votre ID administrateur')
+        throw new Error('Please enter your administrator ID')
       }
       if (!formData.password.trim()) {
-        throw new Error('Veuillez saisir votre mot de passe')
+        throw new Error('Please enter your password')
       }
 
       // Appel API d'authentification
-      console.log('🔄 Tentative d\'authentification hôpital pour:', formData.adminId)
+  console.log('🔄 Hospital authentication attempt for:', formData.adminId)
       
       const response = await api.authenticateHospital({
         adminId: formData.adminId,
@@ -54,17 +54,17 @@ export default function HospitalLogin() {
       })
 
       if (!response.success) {
-        throw new Error(response.error || 'Erreur d\'authentification')
+        throw new Error(response.error || 'Authentication error')
       }
 
-      console.log('✅ Authentification hôpital réussie:', response.data)
+  console.log('✅ Hospital authentication successful:', response.data)
 
       // Vérifier que les données sont présentes
       if (!response.data?.admin?.adminId) {
-        throw new Error('Données administrateur manquantes dans la réponse')
+        throw new Error('Administrator data missing in response')
       }
 
-      // Stocker les informations de session
+      // Store session information
       localStorage.setItem('hospital_session', JSON.stringify({
         adminId: response.data.admin.adminId,
         token: response.data.token,
@@ -73,10 +73,10 @@ export default function HospitalLogin() {
         loginTime: new Date().toISOString()
       }))
       
-      // Rediriger vers le tableau de bord
-      navigate('/hospital/dashboard')
+  // Redirect to dashboard
+  navigate('/hospital/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de connexion')
+  setError(err instanceof Error ? err.message : 'Connection error')
     } finally {
       setIsLoading(false)
     }
@@ -86,34 +86,34 @@ export default function HospitalLogin() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          {/* Bouton retour */}
+          {/* Back button */}
           <div className="mb-6">
             <Link
               to="/"
               className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour à l'accueil
+              Back to home
             </Link>
           </div>
 
-          {/* Logo et titre */}
+          {/* Logo and title */}
           <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6">
               <Building2 className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Connexion Hôpital
+              Hospital Login
             </h2>
             <p className="text-gray-600">
-              Accédez au tableau de bord administrateur
+              Access the administrator dashboard
             </p>
           </div>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow-xl rounded-2xl sm:px-10 border border-gray-100">
-            {/* Message d'erreur */}
+            {/* Error message */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
                 <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
@@ -124,7 +124,7 @@ export default function HospitalLogin() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="adminId" className="block text-sm font-medium text-gray-800 mb-2">
-                  ID Administrateur
+                  Administrator ID
                 </label>
                 <Input
                   id="adminId"
@@ -133,7 +133,7 @@ export default function HospitalLogin() {
                   required
                   value={formData.adminId}
                   onChange={handleInputChange}
-                  placeholder="Saisissez votre ID administrateur"
+                  placeholder="Enter your administrator ID"
                   className="w-full"
                   icon={<User className="h-5 w-5 text-gray-400" />}
                 />
@@ -141,7 +141,7 @@ export default function HospitalLogin() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-800 mb-2">
-                  Mot de passe
+                  Password
                 </label>
                 <div className="relative">
                   <Input
@@ -151,7 +151,7 @@ export default function HospitalLogin() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="Saisissez votre mot de passe"
+                    placeholder="Enter your password"
                     className="w-full pr-12"
                     icon={<Lock className="h-5 w-5 text-gray-400" />}
                   />
@@ -178,32 +178,32 @@ export default function HospitalLogin() {
                   {isLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Connexion...
+                      Signing in...
                     </div>
                   ) : (
-                    'Se connecter'
+                    'Sign In'
                   )}
                 </Button>
               </div>
             </form>
 
-            {/* Informations de test */}
+            {/* Test information */}
             <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h4 className="text-sm font-medium text-blue-900 mb-2">
-                Identifiants de test :
+                Test credentials:
               </h4>
               <div className="text-sm text-blue-800 space-y-1">
-                <p><strong>ID Admin:</strong> ADMIN-CHU-001</p>
-                <p><strong>Mot de passe:</strong> admin123</p>
+                <p><strong>Admin ID:</strong> ADMIN-CHU-001</p>
+                <p><strong>Password:</strong> admin123</p>
               </div>
             </div>
 
-            {/* Liens utiles */}
+            {/* Useful links */}
             <div className="mt-6 text-center">
               <div className="text-sm text-gray-600">
-                Besoin d'aide ? {' '}
+                Need help? {' '}
                 <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">
-                  Contactez le support technique
+                  Contact technical support
                 </a>
               </div>
             </div>
@@ -212,7 +212,7 @@ export default function HospitalLogin() {
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-xs text-gray-500">
-              © 2024 Hedera Health ID. Système sécurisé de gestion hospitalière.
+              © 2024 Hedera Health ID. Secure hospital management system.
             </p>
           </div>
         </div>

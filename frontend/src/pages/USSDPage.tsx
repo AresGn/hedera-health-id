@@ -16,12 +16,12 @@ const USSDPage: React.FC = () => {
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
-                Retour à l'accueil
+                Back to home
               </Link>
             </div>
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">
-                Simulateur USSD
+                USSD Simulator
               </h1>
             </div>
           </div>
@@ -37,23 +37,23 @@ const USSDPage: React.FC = () => {
               <div className="flex items-center mb-4">
                 <Smartphone className="w-6 h-6 text-blue-600 mr-3" />
                 <h2 className="text-xl font-semibold text-gray-900">
-                  Accès USSD pour Zones Rurales
+                  USSD Access for Rural Areas
                 </h2>
               </div>
               <p className="text-gray-600 mb-4">
-                Le système USSD permet aux patients dans les zones rurales d'accéder 
-                à leurs informations médicales même avec un téléphone basique, 
-                sans connexion Internet.
+                The USSD system allows patients in rural areas to access
+                their medical information even with a basic phone,
+                without Internet connection.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-semibold text-blue-900 mb-2">
-                  Comment utiliser :
+                  How to use:
                 </h3>
                 <ol className="list-decimal list-inside text-blue-800 space-y-1">
-                  <li>Composez <code className="bg-blue-100 px-1 rounded">*789*VOTRE_ID#</code></li>
-                  <li>Appuyez sur la touche d'appel</li>
-                  <li>Suivez les instructions du menu</li>
-                  <li>Utilisez les chiffres pour naviguer</li>
+                  <li>Dial <code className="bg-blue-100 px-1 rounded">*789*YOUR_ID#</code></li>
+                  <li>Press the call button</li>
+                  <li>Follow the menu instructions</li>
+                  <li>Use numbers to navigate</li>
                 </ol>
               </div>
             </div>
@@ -61,7 +61,7 @@ const USSDPage: React.FC = () => {
             {/* Features */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Fonctionnalités Disponibles
+                Available Features
               </h3>
               <div className="space-y-4">
                 <div className="flex items-start">
@@ -69,9 +69,9 @@ const USSDPage: React.FC = () => {
                     <Clock className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900">Consultations Récentes</h4>
+                    <h4 className="font-medium text-gray-900">Recent Consultations</h4>
                     <p className="text-sm text-gray-600">
-                      Consultez l'historique de vos dernières visites médicales
+                      View the history of your recent medical visits
                     </p>
                   </div>
                 </div>
@@ -81,9 +81,9 @@ const USSDPage: React.FC = () => {
                     <Users className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900">Prescriptions Actives</h4>
+                    <h4 className="font-medium text-gray-900">Active Prescriptions</h4>
                     <p className="text-sm text-gray-600">
-                      Vérifiez vos médicaments en cours et leur posologie
+                      Check your current medications and dosage
                     </p>
                   </div>
                 </div>
@@ -93,9 +93,9 @@ const USSDPage: React.FC = () => {
                     <MapPin className="w-4 h-4 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900">Mode Urgence</h4>
+                    <h4 className="font-medium text-gray-900">Emergency Mode</h4>
                     <p className="text-sm text-gray-600">
-                      Accès rapide en cas d'urgence médicale
+                      Quick access in case of medical emergency
                     </p>
                   </div>
                 </div>
@@ -105,11 +105,11 @@ const USSDPage: React.FC = () => {
             {/* Test Data */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Données de Test
+                Test Data
               </h3>
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-2">
-                  IDs Patients de Démonstration :
+                  Demo Patient IDs:
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li>
@@ -126,7 +126,7 @@ const USSDPage: React.FC = () => {
                   </li>
                 </ul>
                 <p className="text-xs text-gray-500 mt-3">
-                  Exemple complet : <code>*789*BJ2025001#</code>
+                  Full example: <code>*789*BJ2025001#</code>
                 </p>
               </div>
             </div>
@@ -134,28 +134,28 @@ const USSDPage: React.FC = () => {
             {/* Benefits */}
             <div className="bg-gradient-to-r from-green-500 to-blue-600 rounded-xl p-6 text-white">
               <h3 className="text-lg font-semibold mb-4">
-                Avantages de l'Accès USSD
+                USSD Access Benefits
               </h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                  Fonctionne sur tous les téléphones
+                  Works on all phones
                 </li>
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                  Pas besoin d'Internet
+                  No Internet required
                 </li>
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                  Accès instantané aux données médicales
+                  Instant access to medical data
                 </li>
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                  Interface simple et intuitive
+                  Simple and intuitive interface
                 </li>
                 <li className="flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                  Sécurisé et confidentiel
+                  Secure and confidential
                 </li>
               </ul>
             </div>
@@ -165,11 +165,11 @@ const USSDPage: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                Testez le Simulateur USSD
+                Try the USSD Simulator
               </h3>
               <p className="text-sm text-gray-600 text-center mb-6">
-                Utilisez le simulateur ci-dessous pour tester l'interface USSD 
-                comme sur un vrai téléphone portable.
+                Use the simulator below to test the USSD interface
+                as on a real mobile phone.
               </p>
             </div>
             
@@ -177,9 +177,9 @@ const USSDPage: React.FC = () => {
             
             <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-sm">
               <p className="text-sm text-yellow-800">
-                <strong>Note :</strong> Ceci est un simulateur de démonstration. 
-                Dans la réalité, cette fonctionnalité serait intégrée directement 
-                dans le réseau de l'opérateur téléphonique.
+                <strong>Note:</strong> This is a demo simulator.
+                In reality, this feature would be integrated directly
+                into the mobile operator's network.
               </p>
             </div>
           </div>

@@ -38,8 +38,8 @@ interface PatientFormErrors {
 const hopitauxOptions = [
   { value: 'chu-mel', label: 'CHU-MEL - Cotonou' },
   { value: 'cnhu', label: 'CNHU - Cotonou' },
-  { value: 'pasteur', label: 'Clinique Louis Pasteur' },
-  { value: 'akpakpa', label: 'Centre de Santé Akpakpa' },
+  { value: 'pasteur', label: 'Louis Pasteur Clinic' },
+  { value: 'akpakpa', label: 'Akpakpa Health Center' },
 ]
 
 export default function PatientRegistration() {
@@ -67,9 +67,9 @@ export default function PatientRegistration() {
 
   const fileStorage = useFileStorage()
 
-  const steps = ['Informations', 'Hôpital', 'Documents', 'Validation']
+  const steps = ['Information', 'Hospital', 'Documents', 'Validation']
 
-  // Calculer le pourcentage de completion automatiquement
+  // Calculate completion percentage automatically
   useEffect(() => {
     const requiredFields = ['nom', 'prenom', 'dateNaissance', 'telephone', 'motDePasse', 'confirmerMotDePasse', 'hopitalPrincipal']
     const filledFields = requiredFields.filter(field => {
@@ -80,15 +80,15 @@ export default function PatientRegistration() {
     const percentage = (filledFields.length / requiredFields.length) * 100
     setCompletionPercentage(percentage)
 
-    // Mise à jour automatique de l'étape
+    // Automatic step update
     if (percentage >= 80 && formData.accepteConditions && formData.consentementDonnees) {
       setCurrentStep(4) // Validation
     } else if (percentage >= 60 && formData.hopitalPrincipal) {
       setCurrentStep(3) // Documents
     } else if (percentage >= 40 && (formData.nom || formData.prenom)) {
-      setCurrentStep(2) // Hôpital
+      setCurrentStep(2) // Hospital
     } else {
-      setCurrentStep(1) // Informations
+      setCurrentStep(1) // Information
     }
   }, [formData])
 
@@ -113,35 +113,35 @@ export default function PatientRegistration() {
   const validateForm = (): boolean => {
     const newErrors: PatientFormErrors = {}
 
-    if (!formData.nom.trim()) newErrors.nom = 'Le nom est requis'
-    if (!formData.prenom.trim()) newErrors.prenom = 'Le prénom est requis'
-    if (!formData.dateNaissance) newErrors.dateNaissance = 'La date de naissance est requise'
-    if (!formData.telephone.trim()) newErrors.telephone = 'Le téléphone est requis'
-    if (!formData.motDePasse.trim()) newErrors.motDePasse = 'Le mot de passe est requis'
-    if (!formData.confirmerMotDePasse.trim()) newErrors.confirmerMotDePasse = 'Veuillez confirmer le mot de passe'
-    if (!formData.hopitalPrincipal) newErrors.hopitalPrincipal = 'Veuillez sélectionner un hôpital'
-    if (!formData.accepteConditions) newErrors.accepteConditions = 'Vous devez accepter les conditions'
-    if (!formData.consentementDonnees) newErrors.consentementDonnees = 'Le consentement est requis'
+    if (!formData.nom.trim()) newErrors.nom = 'Last name is required'
+    if (!formData.prenom.trim()) newErrors.prenom = 'First name is required'
+    if (!formData.dateNaissance) newErrors.dateNaissance = 'Date of birth is required'
+    if (!formData.telephone.trim()) newErrors.telephone = 'Phone number is required'
+    if (!formData.motDePasse.trim()) newErrors.motDePasse = 'Password is required'
+    if (!formData.confirmerMotDePasse.trim()) newErrors.confirmerMotDePasse = 'Please confirm password'
+    if (!formData.hopitalPrincipal) newErrors.hopitalPrincipal = 'Please select a hospital'
+    if (!formData.accepteConditions) newErrors.accepteConditions = 'You must accept the terms'
+    if (!formData.consentementDonnees) newErrors.consentementDonnees = 'Consent is required'
 
-    // Validation email si fourni
+    // Email validation if provided
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Format email invalide'
+      newErrors.email = 'Invalid email format'
     }
 
-    // Validation téléphone
+    // Phone validation
     if (formData.telephone && !/^\+229\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}$/.test(formData.telephone)) {
       newErrors.telephone = 'Format: +229 XX XX XX XX'
     }
 
-    // Validation mot de passe
+    // Password validation
     if (formData.motDePasse && formData.motDePasse.length < 8) {
-      newErrors.motDePasse = 'Le mot de passe doit contenir au moins 8 caractères'
+      newErrors.motDePasse = 'Password must contain at least 8 characters'
     }
     if (formData.motDePasse && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.motDePasse)) {
-      newErrors.motDePasse = 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre'
+      newErrors.motDePasse = 'Password must contain at least one uppercase, one lowercase and one digit'
     }
     if (formData.motDePasse !== formData.confirmerMotDePasse) {
-      newErrors.confirmerMotDePasse = 'Les mots de passe ne correspondent pas'
+      newErrors.confirmerMotDePasse = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -156,10 +156,10 @@ export default function PatientRegistration() {
     setIsSubmitting(true)
 
     try {
-      // Génération de l'ID patient
+      // Patient ID generation
       const patientId = `BJ${new Date().getFullYear()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
 
-      // Upload des fichiers si présents
+      // Upload files if present
       if (selectedFiles.length > 0) {
         setIsUploadingFiles(true)
         try {
@@ -168,23 +168,23 @@ export default function PatientRegistration() {
             patientId,
             (progress) => setUploadProgress(progress)
           )
-          console.log('Fichiers uploadés:', uploadedFiles)
+          console.log('Files uploaded:', uploadedFiles)
         } catch (uploadError) {
-          console.error('Erreur lors de l\'upload des fichiers:', uploadError)
-          // Continuer même si l'upload échoue
+          console.error('Error uploading files:', uploadError)
+          // Continue even if upload fails
         } finally {
           setIsUploadingFiles(false)
         }
       }
 
-      // Simulation de l'appel API pour créer le patient
+      // Simulate API call to create patient
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       setGeneratedPatientId(patientId)
       setIsRegistrationComplete(true)
 
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error)
+      console.error('Registration error:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -213,7 +213,7 @@ export default function PatientRegistration() {
           </div>
         </header>
 
-        {/* Formulaire d'inscription ou QR Code */}
+        {/* Registration form or QR Code */}
         <div className="max-w-2xl mx-auto">
           {!isRegistrationComplete ? (
             <div className="bg-white rounded-xl shadow-lg p-8">
@@ -221,11 +221,11 @@ export default function PatientRegistration() {
               <div className="flex items-center justify-center space-x-3 mb-4">
                 <FileText className="h-8 w-8 text-hedera-500" />
                 <h2 className="text-3xl font-bold text-gray-800">
-                  CRÉER MON CARNET
+                  CREATE MY RECORD
                 </h2>
               </div>
 
-              {/* Barre de progression */}
+              {/* Progress bar */}
               <ProgressBar
                 currentStep={currentStep}
                 totalSteps={4}
@@ -234,33 +234,33 @@ export default function PatientRegistration() {
               />
 
               <div className="text-sm text-gray-600 mb-4">
-                Progression: {Math.round(completionPercentage)}% complété
+                Progress: {Math.round(completionPercentage)}% completed
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Informations personnelles */}
+              {/* Personal information */}
               <div className="grid md:grid-cols-2 gap-4">
                 <Input
-                  label="Nom"
+                  label="Last Name"
                   value={formData.nom}
                   onChange={(e) => handleInputChange('nom', e.target.value)}
-                  placeholder="Adjoa KOSSOU"
+                  placeholder="KOSSOU"
                   error={errors.nom}
                   required
                 />
                 <Input
-                  label="Prénom"
+                  label="First Name"
                   value={formData.prenom}
                   onChange={(e) => handleInputChange('prenom', e.target.value)}
-                  placeholder=""
+                  placeholder="Adjoa"
                   error={errors.prenom}
                   required
                 />
               </div>
 
               <Input
-                label="Date de naissance"
+                label="Date of Birth"
                 type="date"
                 value={formData.dateNaissance}
                 onChange={(e) => handleInputChange('dateNaissance', e.target.value)}
@@ -270,7 +270,7 @@ export default function PatientRegistration() {
               />
 
               <Input
-                label="Téléphone"
+                label="Phone"
                 value={formData.telephone}
                 onChange={(e) => handleInputChange('telephone', e.target.value)}
                 placeholder="+229 97 XX XX XX"
@@ -280,7 +280,7 @@ export default function PatientRegistration() {
               />
 
               <Input
-                label="Email (optionnel)"
+                label="Email (optional)"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -291,27 +291,27 @@ export default function PatientRegistration() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Mot de passe"
+                  label="Password"
                   type="password"
                   value={formData.motDePasse}
                   onChange={(e) => handleInputChange('motDePasse', e.target.value)}
-                  placeholder="Minimum 8 caractères"
+                  placeholder="Minimum 8 characters"
                   error={errors.motDePasse}
                   required
                 />
                 <Input
-                  label="Confirmer le mot de passe"
+                  label="Confirm Password"
                   type="password"
                   value={formData.confirmerMotDePasse}
                   onChange={(e) => handleInputChange('confirmerMotDePasse', e.target.value)}
-                  placeholder="Retapez votre mot de passe"
+                  placeholder="Retype your password"
                   error={errors.confirmerMotDePasse}
                   required
                 />
               </div>
 
               <Select
-                label="Hôpital principal"
+                label="Main Hospital"
                 value={formData.hopitalPrincipal}
                 onChange={(e) => handleInputChange('hopitalPrincipal', e.target.value)}
                 options={hopitauxOptions}
@@ -320,9 +320,9 @@ export default function PatientRegistration() {
                 required
               />
 
-              {/* Upload de fichier */}
+              {/* File upload */}
               <FileUpload
-                label="Importer ancien dossier (optionnel)"
+                label="Import old records (optional)"
                 accept=".pdf,.jpg,.jpeg,.png"
                 multiple={true}
                 onFileSelect={handleFileSelect}
@@ -330,10 +330,10 @@ export default function PatientRegistration() {
                 onFileRemove={handleFileRemove}
               />
 
-              {/* Indicateur de progression d'upload */}
+              {/* Upload progress indicator */}
               {isUploadingFiles && uploadProgress.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Upload en cours...</p>
+                  <p className="text-sm font-medium text-gray-700">Upload in progress...</p>
                   {uploadProgress.map((progress) => (
                     <div key={progress.fileId} className="space-y-1">
                       <div className="flex justify-between text-xs text-gray-600">
@@ -357,7 +357,7 @@ export default function PatientRegistration() {
                 </div>
               )}
 
-              {/* Cases à cocher */}
+              {/* Checkboxes */}
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <input
@@ -368,7 +368,7 @@ export default function PatientRegistration() {
                     className="mt-1 h-4 w-4 text-hedera-500 focus:ring-hedera-500 border-gray-300 rounded"
                   />
                   <label htmlFor="conditions" className="text-sm text-gray-700">
-                    J'accepte les conditions d'utilisation
+                    I accept the terms of use
                   </label>
                 </div>
                 {errors.accepteConditions && (
@@ -384,7 +384,7 @@ export default function PatientRegistration() {
                     className="mt-1 h-4 w-4 text-hedera-500 focus:ring-hedera-500 border-gray-300 rounded"
                   />
                   <label htmlFor="consentement" className="text-sm text-gray-700">
-                    Je consens au traitement de mes données médicales
+                    I consent to the processing of my medical data
                   </label>
                 </div>
                 {errors.consentementDonnees && (
@@ -392,7 +392,7 @@ export default function PatientRegistration() {
                 )}
               </div>
 
-              {/* Bouton de soumission */}
+              {/* Submit button */}
               <div className="pt-6">
                 <Button
                   type="submit"
@@ -401,36 +401,36 @@ export default function PatientRegistration() {
                   className="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'CRÉATION EN COURS...' : 'CRÉER MON CARNET'}
+                  {isSubmitting ? 'CREATING...' : 'CREATE MY RECORD'}
                 </Button>
               </div>
             </form>
           </div>
           ) : (
-            /* Section QR Code après inscription */
+            /* QR Code section after registration */
             <div className="space-y-6">
-              {/* Message de succès */}
+              {/* Success message */}
               <div className="bg-white rounded-xl shadow-lg p-8 text-center">
                 <div className="flex items-center justify-center space-x-3 mb-4">
                   <CheckCircle2 className="h-8 w-8 text-green-500" />
                   <h2 className="text-3xl font-bold text-gray-800">
-                    INSCRIPTION RÉUSSIE !
+                    REGISTRATION SUCCESSFUL!
                   </h2>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Votre carnet de santé numérique a été créé avec succès.
+                  Your digital health record has been successfully created.
                 </p>
                 <div className="bg-green-50 rounded-lg p-4 mb-6">
                   <p className="text-green-700 font-semibold">
-                    ID Patient: {generatedPatientId}
+                    Patient ID: {generatedPatientId}
                   </p>
                   <p className="text-green-600 text-sm mt-1">
-                    Conservez précieusement cet identifiant
+                    Keep this identifier safe
                   </p>
                 </div>
               </div>
 
-              {/* Composant QR Code */}
+              {/* QR Code component */}
               <QRCodeGenerator
                 patientData={{
                   patientId: generatedPatientId,
@@ -448,12 +448,12 @@ export default function PatientRegistration() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/patient/dashboard" className="flex-1">
                     <Button variant="primary" className="w-full">
-                      Accéder à mon Dashboard
+                      Access my Dashboard
                     </Button>
                   </Link>
                   <Link to="/" className="flex-1">
                     <Button variant="outline" className="w-full">
-                      Retour à l'accueil
+                      Back to Home
                     </Button>
                   </Link>
                 </div>

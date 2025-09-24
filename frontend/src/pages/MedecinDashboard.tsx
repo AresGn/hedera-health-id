@@ -189,14 +189,14 @@ export default function MedecinDashboard() {
   }
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('fr-FR', {
+    return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
     })
   }
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -280,7 +280,7 @@ export default function MedecinDashboard() {
               className="flex items-center space-x-2"
             >
               <Camera className="h-4 w-4" />
-              <span className="hidden sm:inline">Scanner QR</span>
+              <span className="hidden sm:inline">Scan QR</span>
             </Button>
 
             <Button
@@ -290,12 +290,12 @@ export default function MedecinDashboard() {
               className="flex items-center space-x-2"
             >
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </header>
 
-        {/* KPIs Journaliers */}
+  {/* Daily KPIs */}
         {dailyStats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
@@ -306,50 +306,50 @@ export default function MedecinDashboard() {
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-800">{dailyStats.consultationsToday}</p>
-              <p className="text-xs text-gray-500">Aujourd'hui</p>
+              <p className="text-xs text-gray-500">Today</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Users className="h-5 w-5 text-green-500" />
-                  <span className="text-sm font-medium text-gray-700">Patients vus</span>
+                  <span className="text-sm font-medium text-gray-700">Patients seen</span>
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-800">{dailyStats.patientsVus}</p>
-              <p className="text-xs text-gray-500">Aujourd'hui</p>
+              <p className="text-xs text-gray-500">Today</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-5 w-5 text-purple-500" />
-                  <span className="text-sm font-medium text-gray-700">RDV programmés</span>
+                  <span className="text-sm font-medium text-gray-700">Scheduled appointments</span>
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-800">{dailyStats.rdvProgrammes}</p>
-              <p className="text-xs text-gray-500">Restants</p>
+              <p className="text-xs text-gray-500">Remaining</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
-                  <span className="text-sm font-medium text-gray-700">Urgences</span>
+                  <span className="text-sm font-medium text-gray-700">Emergencies</span>
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-800">{dailyStats.urgences}</p>
-              <p className="text-xs text-gray-500">En attente</p>
+              <p className="text-xs text-gray-500">Pending</p>
             </div>
           </div>
         )}
 
-        {/* Recherche rapide et Actions */}
+  {/* Quick search and Actions */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Recherche patients */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Recherche Patient</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Patient Search</h3>
               <Button
                 onClick={() => navigate('/medecin/patients')}
                 variant="outline"
@@ -357,7 +357,7 @@ export default function MedecinDashboard() {
                 className="flex items-center space-x-2"
               >
                 <Users className="h-4 w-4" />
-                <span>Tous les patients</span>
+                <span>All patients</span>
               </Button>
             </div>
 
@@ -365,7 +365,7 @@ export default function MedecinDashboard() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher par nom, prénom ou ID patient..."
+                placeholder="Search by name, surname or patient ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -374,7 +374,7 @@ export default function MedecinDashboard() {
 
             {/* Patients récents */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-gray-700">Patients récents</h4>
+              <h4 className="text-sm font-medium text-gray-700">Recent patients</h4>
               {recentPatients.map((patient) => (
                 <div
                   key={patient.id}
@@ -390,7 +390,7 @@ export default function MedecinDashboard() {
                         {patient.nom} {patient.prenom}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {patient.patientId} • {patient.age} ans
+                        {patient.patientId} • {patient.age} years
                       </p>
                     </div>
                   </div>
@@ -405,9 +405,9 @@ export default function MedecinDashboard() {
             </div>
           </div>
 
-          {/* Actions rapides */}
+    {/* Quick actions */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Actions Rapides</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Button
                 onClick={() => navigate('/medecin/consultation/new')}
@@ -415,7 +415,7 @@ export default function MedecinDashboard() {
                 className="w-full flex items-center justify-center space-x-2"
               >
                 <Plus className="h-4 w-4" />
-                <span>Nouvelle Consultation</span>
+                <span>New Consultation</span>
               </Button>
 
               <Button
@@ -424,7 +424,7 @@ export default function MedecinDashboard() {
                 className="w-full flex items-center justify-center space-x-2"
               >
                 <Camera className="h-4 w-4" />
-                <span>Scanner QR Patient</span>
+                <span>Scan Patient QR</span>
               </Button>
 
               <Button
@@ -433,7 +433,7 @@ export default function MedecinDashboard() {
                 className="w-full flex items-center justify-center space-x-2"
               >
                 <Calendar className="h-4 w-4" />
-                <span>Mon Planning</span>
+                <span>My Schedule</span>
               </Button>
 
               <Button
@@ -442,20 +442,20 @@ export default function MedecinDashboard() {
                 className="w-full flex items-center justify-center space-x-2"
               >
                 <BarChart3 className="h-4 w-4" />
-                <span>Mes Statistiques</span>
+                <span>My Statistics</span>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Planning du jour */}
+  {/* Today's schedule */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-800">Planning du Jour</h3>
+            <h3 className="text-lg font-semibold text-gray-800">Today's Schedule</h3>
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">
-                {todayAppointments.length} rendez-vous
+                {todayAppointments.length} appointments
               </span>
             </div>
           </div>
@@ -481,8 +481,8 @@ export default function MedecinDashboard() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(rdv.status)}`}>
-                      {rdv.status === 'confirme' ? 'Confirmé' :
-                       rdv.status === 'en_attente' ? 'En attente' : 'Annulé'}
+                      {rdv.status === 'confirme' ? 'Confirmed' :
+                       rdv.status === 'en_attente' ? 'Pending' : 'Cancelled'}
                     </span>
                     <Button
                       onClick={() => navigate('/medecin/consultation/new', {
@@ -491,7 +491,7 @@ export default function MedecinDashboard() {
                       variant="outline"
                       size="sm"
                     >
-                      Consulter
+                      View
                     </Button>
                   </div>
                 </div>
@@ -500,12 +500,12 @@ export default function MedecinDashboard() {
           ) : (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Aucun rendez-vous programmé aujourd'hui</p>
+              <p className="text-gray-500">No appointments scheduled today</p>
             </div>
           )}
         </div>
 
-        {/* Notifications et alertes */}
+  {/* Notifications and alerts */}
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -517,7 +517,7 @@ export default function MedecinDashboard() {
                 <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-blue-800">
-                    Nouveau patient enregistré
+                    New patient registered
                   </p>
                   <p className="text-xs text-blue-600">
                     KOSSOU Adjoa - BJ2025001
@@ -528,7 +528,7 @@ export default function MedecinDashboard() {
                 <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800">
-                    Rendez-vous à confirmer
+                    Appointment to confirm
                   </p>
                   <p className="text-xs text-yellow-600">
                     AKPOVI Sylvie - 15:00
@@ -540,20 +540,20 @@ export default function MedecinDashboard() {
 
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Statistiques Personnelles</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Personal Statistics</h3>
               <TrendingUp className="h-5 w-5 text-green-500" />
             </div>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Consultations cette semaine</span>
+                <span className="text-sm text-gray-600">Consultations this week</span>
                 <span className="font-bold text-gray-800">47</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Patients uniques</span>
+                <span className="text-sm text-gray-600">Unique patients</span>
                 <span className="font-bold text-gray-800">32</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Taux de satisfaction</span>
+                <span className="text-sm text-gray-600">Satisfaction rate</span>
                 <span className="font-bold text-green-600">98%</span>
               </div>
               <div className="pt-2">
@@ -563,7 +563,7 @@ export default function MedecinDashboard() {
                   size="sm"
                   className="w-full"
                 >
-                  Voir détails
+                  View details
                 </Button>
               </div>
             </div>
