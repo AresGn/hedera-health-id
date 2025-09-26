@@ -1,53 +1,53 @@
-# 🚀 Prochaines Étapes - Hedera Health ID
+# 🚀 Next Steps - Hedera Health ID
 
-## ✅ Intégration Terminée !
+## ✅ Integration Complete!
 
-L'intégration des smart contracts d'Ulrich dans votre projet principal est **100% complète** ! 
+The integration of Ulrich's smart contracts into your main project is **100% complete**!
 
-Voici ce qui a été accompli :
-- ✅ Smart contracts intégrés et adaptés
-- ✅ Services backend TypeScript créés
-- ✅ API REST complète avec validation
-- ✅ Scripts de déploiement configurés
-- ✅ Suite de tests exhaustive
-- ✅ Documentation complète
+Here's what has been accomplished:
+- ✅ Smart contracts integrated and adapted
+- ✅ TypeScript backend services created
+- ✅ Complete REST API with validation
+- ✅ Deployment scripts configured
+- ✅ Comprehensive test suite
+- ✅ Complete documentation
 
-## 🎯 Actions Immédiates
+## 🎯 Immediate Actions
 
-### 1. **Configuration Hedera** (PRIORITÉ 1)
+### 1. **Hedera Configuration** (PRIORITY 1)
 
-Vous devez maintenant configurer votre compte Hedera Testnet :
+You now need to configure your Hedera Testnet account:
 
 ```bash
-# 1. Créer un compte Hedera Testnet
-# Allez sur: https://portal.hedera.com/
+# 1. Create a Hedera Testnet account
+# Go to: https://portal.hedera.com/
 
-# 2. Configurer les variables dans backend/.env
-OPERATOR_ID=0.0.VOTRE_ACCOUNT_ID
-OPERATOR_KEY=VOTRE_PRIVATE_KEY
+# 2. Configure variables in backend/.env
+OPERATOR_ID=0.0.YOUR_ACCOUNT_ID
+OPERATOR_KEY=YOUR_PRIVATE_KEY
 
-# 3. Valider la configuration
+# 3. Validate configuration
 cd hedera-health-id/backend
 npm run validate:integration
 ```
 
-### 2. **Déploiement des Contrats** (PRIORITÉ 2)
+### 2. **Contract Deployment** (PRIORITY 2)
 
-Une fois la configuration Hedera faite :
+Once Hedera configuration is done:
 
 ```bash
-# Compiler les contrats
+# Compile contracts
 npm run contracts:compile
 
-# Déployer tous les contrats
+# Deploy all contracts
 npm run contracts:deploy
 
-# Ou déployer individuellement
+# Or deploy individually
 npm run contracts:deploy:patient
 npm run contracts:deploy:access
 ```
 
-### 3. **Tests de Validation** (PRIORITÉ 3)
+### 3. **Validation Tests** (PRIORITY 3)
 
 Valider que tout fonctionne :
 

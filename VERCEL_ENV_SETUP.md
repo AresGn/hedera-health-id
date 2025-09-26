@@ -1,17 +1,17 @@
-# Configuration des Variables d'Environnement Vercel
+# Vercel Environment Variables Configuration
 
-## 🚨 URGENT - Configuration Requise
+## 🚨 URGENT - Required Configuration
 
-Pour résoudre les erreurs CORS et de connexion API, vous devez configurer les variables d'environnement suivantes sur Vercel :
+To resolve CORS and API connection errors, you need to configure the following environment variables on Vercel:
 
 ## Frontend (hedera-health-id.vercel.app)
 
-### Variables à ajouter dans Vercel Dashboard :
+### Variables to add in Vercel Dashboard:
 
-1. Allez sur https://vercel.com/dashboard
-2. Sélectionnez votre projet frontend `hedera-health-id`
-3. Allez dans Settings > Environment Variables
-4. Ajoutez les variables suivantes :
+1. Go to https://vercel.com/dashboard
+2. Select your frontend project `hedera-health-id`
+3. Go to Settings > Environment Variables
+4. Add the following variables:
 
 ```
 VITE_API_URL=https://hedera-health-id-backend.vercel.app
@@ -22,7 +22,7 @@ VITE_NODE_ENV=production
 
 ## Backend (hedera-health-id-backend.vercel.app)
 
-### Variables déjà configurées à vérifier :
+### Already configured variables to verify:
 
 ```
 NODE_ENV=production
@@ -34,19 +34,19 @@ ENCRYPTION_KEY=your-encryption-key
 CORS_ORIGIN=https://hedera-health-id.vercel.app
 ```
 
-## 🔧 Étapes de Configuration
+## 🔧 Configuration Steps
 
 ### 1. Frontend
 ```bash
-# Dans le dashboard Vercel du frontend
+# In the frontend Vercel dashboard
 VITE_API_URL → https://hedera-health-id-backend.vercel.app
 ```
 
-### 2. Redéploiement
-Après avoir ajouté les variables :
-1. Allez dans l'onglet "Deployments"
-2. Cliquez sur "Redeploy" pour le dernier déploiement
-3. Ou poussez un nouveau commit pour déclencher un redéploiement automatique
+### 2. Redeployment
+After adding the variables:
+1. Go to the "Deployments" tab
+2. Click "Redeploy" for the latest deployment
+3. Or push a new commit to trigger automatic redeployment
 
 ## 🧪 Test après Configuration
 
