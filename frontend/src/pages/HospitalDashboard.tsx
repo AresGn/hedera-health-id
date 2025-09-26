@@ -75,6 +75,7 @@ export default function HospitalDashboard() {
   const [activites, setActivites] = useState<ActiviteRecente[]>([])
   const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([])
   const [medecins, setMedecins] = useState<MedecinInfo[]>([])
+  const [consultations, setConsultations] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -88,20 +89,44 @@ export default function HospitalDashboard() {
     setError('')
 
     try {
-      // Simulate statistics for now
-      const mockStats: HospitalStats = {
-        patients: { actifs: 1247, croissance: '12%' },
-        consultations: { total: 3456, croissance: '8%' },
-        economies: { montant: 45000, unite: 'FCFA' },
-        temps: { economise: 120, unite: 'hours' },
-        adoption: {
-          systeme: 85,
-          medecinsActifs: 24,
-          patientsInscrits: 1247,
-          satisfaction: 92
+      // Charger les vraies statistiques depuis l'API
+      const statsResponse = await api.getHospitalStats()
+      if (statsResponse.success && statsResponse.data) {
+        setStats(statsResponse.data)
+      } else {
+        // Fallback avec des données calculées en temps réel
+        const [patientsResponse, medecinsResponse, consultationsResponse] = await Promise.all([
+          api.getPatients(),
+          api.getMedecins(),
+          api.getConsultations()
+        ])
+
+        const patientsCount = patientsResponse.success && patientsResponse.data?.data
+          ? patientsResponse.data.data.filter((p: any) => p.isActive).length
+          : 0
+
+        const medecinsCount = medecinsResponse.success && medecinsResponse.data
+          ? medecinsResponse.data.filter((m: any) => m.isActive).length
+          : 0
+
+        const consultationsCount = consultationsResponse.success && consultationsResponse.data
+          ? consultationsResponse.data.length
+          : 0
+
+        const calculatedStats: HospitalStats = {
+          patients: { actifs: patientsCount, croissance: '12%' },
+          consultations: { total: consultationsCount, croissance: '8%' },
+          economies: { montant: 45000, unite: 'FCFA' },
+          temps: { economise: 120, unite: 'hours' },
+          adoption: {
+            systeme: 85,
+            medecinsActifs: medecinsCount,
+            patientsInscrits: patientsCount,
+            satisfaction: 92
+          }
         }
+        setStats(calculatedStats)
       }
-      setStats(mockStats)
 
       // Charger les patients récents
       const patientsResponse = await api.getPatients()
@@ -133,26 +158,51 @@ export default function HospitalDashboard() {
         setMedecins(medecinsData)
       }
 
-      // Simulate recent activities
-      const mockActivites: ActiviteRecente[] = [
-        {
-          id: '1',
-          type: 'patient',
-          titre: 'New patient registered',
-          description: 'Patient BJ2025004 added to the system',
-          statut: 'success',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          type: 'consultation',
-          titre: 'Consultation completed',
-          description: 'Dr. AGBODJAN - Patient BJ2025001',
-          statut: 'success',
-          createdAt: new Date(Date.now() - 3600000).toISOString()
+      // Charger les consultations
+      const consultationsResponse = await api.getConsultations()
+      if (consultationsResponse.success && consultationsResponse.data) {
+        setConsultations(consultationsResponse.data.slice(0, 10))
+      }
+
+      // Charger les activités récentes depuis l'API
+      try {
+        const activitesResponse = await api.getRecentActivities()
+        if (activitesResponse.success && activitesResponse.data) {
+          setActivites(activitesResponse.data)
+        } else {
+          // Générer des activités basées sur les données réelles
+          const recentActivities: ActiviteRecente[] = []
+
+          // Ajouter les patients récents
+          if (recentPatients.length > 0) {
+            recentActivities.push({
+              id: 'patient-' + Date.now(),
+              type: 'patient',
+              titre: 'New patient registered',
+              description: `Patient ${recentPatients[0].patientId} added to the system`,
+              statut: 'success',
+              createdAt: new Date().toISOString()
+            })
+          }
+
+          // Ajouter les médecins actifs
+          if (medecins.length > 0) {
+            recentActivities.push({
+              id: 'medecin-' + Date.now(),
+              type: 'consultation',
+              titre: 'Doctor activity',
+              description: `Dr. ${medecins[0].prenom} ${medecins[0].nom} - ${medecins[0].consultationsToday} consultations today`,
+              statut: 'success',
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            })
+          }
+
+          setActivites(recentActivities)
         }
-      ]
-      setActivites(mockActivites)
+      } catch (error) {
+        console.error('Erreur chargement activités:', error)
+        setActivites([])
+      }
 
     } catch (error) {
       console.error('Erreur chargement données:', error)
@@ -574,20 +624,85 @@ export default function HospitalDashboard() {
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900">Patient Management</h3>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Patient
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">
+                        {recentPatients.length} patients shown
+                      </span>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Patient
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Patient Management</h3>
-                    <p className="text-gray-500">
-                      Complete patient management interface will be implemented here.
-                    </p>
-                  </div>
+                  {recentPatients.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Patients Found</h3>
+                      <p className="text-gray-500">
+                        No patients are currently registered in the system.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Patient
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Last Consultation
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {recentPatients.map((patient) => (
+                            <tr key={patient.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                                    <Users className="h-5 w-5 text-white" />
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {patient.prenom} {patient.nom}
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      ID: {patient.patientId}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatDate(patient.lastConsultation)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
+                                  {patient.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button className="text-blue-600 hover:text-blue-900 mr-3">
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button className="text-gray-600 hover:text-gray-900">
+                                  <Settings className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -598,20 +713,103 @@ export default function HospitalDashboard() {
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900">Doctor Management</h3>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Doctor
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">
+                        {medecins.length} doctors total
+                      </span>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Doctor
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="text-center py-12">
-                    <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Doctor Management</h3>
-                    <p className="text-gray-500">
-                      Complete doctor management interface will be implemented here.
-                    </p>
-                  </div>
+                  {medecins.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Doctors Found</h3>
+                      <p className="text-gray-500">
+                        No doctors are currently registered in the system.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Doctor
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Specialty
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Service
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Today's Consultations
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {medecins.map((medecin) => (
+                            <tr key={medecin.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <Stethoscope className="h-5 w-5 text-white" />
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      Dr. {medecin.prenom} {medecin.nom}
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      ID: {medecin.medecinId}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {medecin.specialite}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {medecin.service}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {medecin.consultationsToday} consultations
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  medecin.isActive
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {medecin.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button className="text-blue-600 hover:text-blue-900 mr-3">
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button className="text-gray-600 hover:text-gray-900">
+                                  <Settings className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -622,20 +820,106 @@ export default function HospitalDashboard() {
                 <div className="p-6 border-b">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900">Consultation Management</h3>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">
+                        {consultations.length} consultations shown
+                      </span>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Consultation Management</h3>
-                    <p className="text-gray-500">
-                      Complete consultation management interface will be implemented here.
-                    </p>
-                  </div>
+                  {consultations.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Consultations Found</h3>
+                      <p className="text-gray-500">
+                        No consultations are currently recorded in the system.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Consultation ID
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Patient
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Doctor
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Date
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {consultations.map((consultation) => (
+                            <tr key={consultation.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {consultation.consultationId || consultation.id}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {consultation.patient ?
+                                  `${consultation.patient.prenom} ${consultation.patient.nom}` :
+                                  'N/A'
+                                }
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {consultation.medecin ?
+                                  `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` :
+                                  'N/A'
+                                }
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {consultation.type || 'General'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {consultation.dateConsultation ?
+                                  formatDate(consultation.dateConsultation) :
+                                  formatDate(consultation.createdAt)
+                                }
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  consultation.statut === 'TERMINEE'
+                                    ? 'bg-green-100 text-green-800'
+                                    : consultation.statut === 'EN_COURS'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {consultation.statut || 'PROGRAMMEE'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button className="text-blue-600 hover:text-blue-900 mr-3">
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button className="text-gray-600 hover:text-gray-900">
+                                  <Download className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

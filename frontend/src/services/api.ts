@@ -215,6 +215,16 @@ class ApiService {
     })
   }
 
+  // Récupérer les statistiques de l'hôpital
+  async getHospitalStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/statistiques/dashboard')
+  }
+
+  // Récupérer les activités récentes
+  async getRecentActivities(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/api/v1/statistiques/activites')
+  }
+
   // Vérifier la connectivité
   async checkConnectivity(): Promise<boolean> {
     try {
@@ -241,6 +251,8 @@ export function useApi() {
     getPatientById: (patientId: string) => apiService.getPatientById(patientId),
     getPatientConsultations: (patientId: string) => apiService.getPatientConsultations(patientId),
     createConsultation: (data: any) => apiService.createConsultation(data),
+    getHospitalStats: () => apiService.getHospitalStats(),
+    getRecentActivities: () => apiService.getRecentActivities(),
     createPatient: (data: Parameters<typeof apiService.createPatient>[0]) =>
       apiService.createPatient(data),
     authenticatePatient: (credentials: Parameters<typeof apiService.authenticatePatient>[0]) =>

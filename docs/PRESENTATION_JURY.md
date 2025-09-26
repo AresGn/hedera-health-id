@@ -1,132 +1,132 @@
-# 🏆 Hedera Health ID - Présentation pour le Jury
+# 🏆 Hedera Health ID - Jury Presentation
 
-## 📋 Résumé Exécutif
+## 📋 Executive Summary
 
-**Hedera Health ID** est une plateforme révolutionnaire de gestion d'identité médicale décentralisée qui combine les technologies web modernes avec la blockchain Hedera Hashgraph pour créer un écosystème de santé sécurisé, interopérable et centré sur le patient.
+**Hedera Health ID** is a revolutionary decentralized medical identity management platform that combines modern web technologies with Hedera Hashgraph blockchain to create a secure, interoperable, and patient-centered healthcare ecosystem.
 
 ### 🎯 Vision
-Révolutionner la gestion des données de santé en Afrique en créant un système d'identité médicale numérique sécurisé, décentralisé et accessible à tous.
+Revolutionize healthcare data management in Africa by creating a secure, decentralized, and accessible digital medical identity system for all.
 
 ### 🚀 Mission
-Permettre aux patients de contrôler leurs données médicales tout en facilitant l'accès sécurisé aux professionnels de santé, réduisant les erreurs médicales et améliorant la continuité des soins.
+Enable patients to control their medical data while facilitating secure access for healthcare professionals, reducing medical errors and improving continuity of care.
 
-## 🌟 Problématiques Résolues
+## 🌟 Problems Solved
 
-### 1. **Fragmentation des Dossiers Médicaux**
-- **Problème :** Dossiers dispersés entre différents établissements
-- **Solution :** Identité médicale unique et portable sur blockchain
+### 1. **Medical Record Fragmentation**
+- **Problem:** Records scattered across different healthcare facilities
+- **Solution:** Unique and portable medical identity on blockchain
 
-### 2. **Manque de Sécurité des Données**
-- **Problème :** Risques de piratage et de fuites de données sensibles
-- **Solution :** Chiffrement avancé et stockage décentralisé
+### 2. **Data Security Gaps**
+- **Problem:** Risk of hacking and sensitive data breaches
+- **Solution:** Advanced encryption and decentralized storage
 
-### 3. **Accès Difficile aux Soins**
-- **Problème :** Historique médical inaccessible en urgence
-- **Solution :** QR Code d'identité pour accès instantané
+### 3. **Difficult Access to Care**
+- **Problem:** Medical history inaccessible during emergencies
+- **Solution:** Identity QR Code for instant access
 
-### 4. **Coûts Élevés de Gestion**
-- **Problème :** Systèmes coûteux et complexes à maintenir
-- **Solution :** Architecture cloud-native et blockchain économique
+### 4. **High Management Costs**
+- **Problem:** Expensive and complex systems to maintain
+- **Solution:** Cloud-native architecture and economical blockchain
 
-## 🏗️ Architecture Technique
+## 🏗️ Technical Architecture
 
-### **Stack Technologique**
+### **Technology Stack**
 ```
 Frontend: React 18 + TypeScript + Tailwind CSS + PWA
 Backend: Node.js + Express + TypeScript + Prisma ORM
 Database: PostgreSQL (Neon Cloud)
 Blockchain: Hedera Hashgraph (HCS + HTS + HFS)
-Déploiement: Vercel (Frontend + Backend Serverless)
+Deployment: Vercel (Frontend + Backend Serverless)
 ```
 
-### **Composants Principaux**
+### **Main Components**
 
-1. **Interface Utilisateur Multi-Rôles**
-   - Dashboard Patient : Consultation de l'historique médical
-   - Dashboard Médecin : Gestion des consultations et patients
-   - Dashboard Hôpital : Administration et statistiques
+1. **Multi-Role User Interface**
+   - Patient Dashboard: Medical history consultation
+   - Doctor Dashboard: Consultation and patient management
+   - Hospital Dashboard: Administration and statistics
 
-2. **API REST Sécurisée**
-   - Authentification multi-niveaux (Patient/Médecin/Hôpital)
-   - Validation des données et gestion d'erreurs
-   - Rate limiting et protection CORS
+2. **Secure REST API**
+   - Multi-level authentication (Patient/Doctor/Hospital)
+   - Data validation and error handling
+   - Rate limiting and CORS protection
 
-3. **Base de Données Relationnelle**
-   - Modèle de données optimisé pour la santé
-   - Relations complexes entre entités médicales
-   - Index de performance et contraintes d'intégrité
+3. **Relational Database**
+   - Healthcare-optimized data model
+   - Complex relationships between medical entities
+   - Performance indexes and integrity constraints
 
-4. **Intégration Blockchain (Phase 2)**
-   - Hedera Consensus Service pour l'audit trail
-   - Tokens d'incitation pour l'écosystème
-   - Smart contracts pour la gouvernance
+4. **Blockchain Integration (Phase 2)**
+   - Hedera Consensus Service for audit trail
+   - Incentive tokens for the ecosystem
+   - Smart contracts for governance
 
-## 🔐 Sécurité et Confidentialité
+## 🔐 Security and Privacy
 
-### **Mesures de Sécurité Implémentées**
+### **Implemented Security Measures**
 
-1. **Authentification Robuste**
-   - Hachage bcrypt avec 12 rounds de salage
-   - Limitation des tentatives de connexion
-   - Sessions sécurisées avec tokens JWT
+1. **Robust Authentication**
+   - bcrypt hashing with 12 salt rounds
+   - Login attempt rate limiting
+   - Secure sessions with JWT tokens
 
-2. **Chiffrement des Données**
-   - Chiffrement AES-256 pour les données sensibles
-   - Clés de chiffrement par patient
-   - Transmission HTTPS obligatoire
+2. **Data Encryption**
+   - AES-256 encryption for sensitive data
+   - Per-patient encryption keys
+   - Mandatory HTTPS transmission
 
-3. **Contrôle d'Accès Granulaire**
-   - Permissions basées sur les rôles
-   - Autorisation explicite des médecins par les patients
-   - Audit trail immutable sur blockchain
+3. **Granular Access Control**
+   - Role-based permissions
+   - Explicit doctor authorization by patients
+   - Immutable audit trail on blockchain
 
-4. **Conformité Réglementaire**
-   - Respect des standards de santé internationaux
-   - Préparation pour RGPD et réglementations locales
-   - Anonymisation pour la recherche médicale
+4. **Regulatory Compliance**
+   - Compliance with international health standards
+   - GDPR and local regulation readiness
+   - Anonymization for medical research
 
-## 📊 Fonctionnalités Clés
+## 📊 Key Features
 
-### **Pour les Patients**
-- ✅ Identité médicale numérique unique
-- ✅ Consultation de l'historique médical complet
-- ✅ QR Code pour accès d'urgence
-- ✅ Contrôle des autorisations d'accès
-- ✅ Notifications de nouvelles consultations
+### **For Patients**
+- ✅ Unique digital medical identity
+- ✅ Complete medical history consultation
+- ✅ QR Code for emergency access
+- ✅ Access authorization control
+- ✅ New consultation notifications
 
-### **Pour les Médecins**
-- ✅ Accès sécurisé aux dossiers patients autorisés
-- ✅ Création et gestion des consultations
-- ✅ Interface moderne et intuitive
-- ✅ Statistiques et analytics
-- ✅ Intégration avec les systèmes hospitaliers
+### **For Doctors**
+- ✅ Secure access to authorized patient records
+- ✅ Consultation creation and management
+- ✅ Modern and intuitive interface
+- ✅ Statistics and analytics
+- ✅ Integration with hospital systems
 
-### **Pour les Hôpitaux**
-- ✅ Gestion centralisée des patients et médecins
-- ✅ Statistiques et tableaux de bord
-- ✅ Administration des accès
-- ✅ Rapports et analytics avancés
-- ✅ Intégration avec les systèmes existants
+### **For Hospitals**
+- ✅ Centralized patient and doctor management
+- ✅ Statistics and dashboards
+- ✅ Access administration
+- ✅ Advanced reports and analytics
+- ✅ Integration with existing systems
 
-## 🌍 Impact et Bénéfices
+## 🌍 Impact and Benefits
 
-### **Impact Social**
-- **Amélioration des Soins :** Accès rapide à l'historique médical
-- **Réduction des Erreurs :** Informations médicales complètes et à jour
-- **Égalité d'Accès :** Solution accessible même dans les zones rurales
-- **Autonomisation des Patients :** Contrôle total de leurs données
+### **Social Impact**
+- **Healthcare Improvement:** Quick access to medical history
+- **Error Reduction:** Complete and up-to-date medical information
+- **Equal Access:** Solution accessible even in rural areas
+- **Patient Empowerment:** Full control over their data
 
-### **Impact Économique**
-- **Réduction des Coûts :** Élimination des examens redondants
-- **Efficacité Hospitalière :** Optimisation des processus
-- **Création d'Emplois :** Écosystème technologique local
-- **Innovation :** Catalyseur pour la santé numérique en Afrique
+### **Economic Impact**
+- **Cost Reduction:** Elimination of redundant examinations
+- **Hospital Efficiency:** Process optimization
+- **Job Creation:** Local technology ecosystem
+- **Innovation:** Catalyst for digital health in Africa
 
-### **Impact Technologique**
-- **Adoption Blockchain :** Démocratisation de la technologie DLT
-- **Standards Ouverts :** Interopérabilité avec les systèmes existants
-- **Innovation Médicale :** Plateforme pour l'IA et la télémédecine
-- **Souveraineté Numérique :** Solution développée localement
+### **Technological Impact**
+- **Blockchain Adoption:** Democratization of DLT technology
+- **Open Standards:** Interoperability with existing systems
+- **Medical Innovation:** Platform for AI and telemedicine
+- **Digital Sovereignty:** Locally developed solution
 
 ## 📈 Métriques et Performances
 

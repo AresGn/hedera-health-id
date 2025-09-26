@@ -1,27 +1,27 @@
-# 🏥 Hedera Health ID - Documentation Complète du Projet
+# 🏥 Hedera Health ID - Complete Project Documentation
 
-## 🎯 Vue d'Ensemble du Projet
+## 🎯 Project Overview
 
-**Hedera Health ID** est une solution révolutionnaire de **carnet de santé numérique décentralisé** construite sur la blockchain **Hedera Hashgraph**. Le projet vise à résoudre le problème critique de la **portabilité des dossiers médicaux en Afrique**, où plus de **600 millions de personnes** n'ont pas accès à un système de santé numérique unifié.
+**Hedera Health ID** is a revolutionary **decentralized digital health record** solution built on the **Hedera Hashgraph** blockchain. The project aims to solve the critical problem of **medical record portability in Africa**, where more than **600 million people** lack access to a unified digital healthcare system.
 
-### **Problème Résolu**
-- 🚨 **Perte de dossiers médicaux** lors de changements d'hôpitaux
-- 🚨 **Manque d'interopérabilité** entre établissements de santé
-- 🚨 **Accès limité** aux soins dans les zones rurales
-- 🚨 **Absence de traçabilité** et d'audit des données médicales
+### **Problem Solved**
+- 🚨 **Loss of medical records** when changing hospitals
+- 🚨 **Lack of interoperability** between healthcare facilities
+- 🚨 **Limited access** to care in rural areas
+- 🚨 **Absence of traceability** and audit of medical data
 
-### **Solution Proposée**
-- ✅ **Identité médicale unique** sur blockchain Hedera
-- ✅ **Portabilité complète** des dossiers entre hôpitaux
-- ✅ **Accès USSD** pour les zones rurales sans smartphone
-- ✅ **Sécurité cryptographique** et contrôle d'accès granulaire
-- ✅ **Interopérabilité** garantie par les standards blockchain
+### **Proposed Solution**
+- ✅ **Unique medical identity** on Hedera blockchain
+- ✅ **Complete portability** of records between hospitals
+- ✅ **USSD access** for rural areas without smartphones
+- ✅ **Cryptographic security** and granular access control
+- ✅ **Interoperability** guaranteed by blockchain standards
 
 ---
 
-## 🏗️ Architecture Technique
+## 🏗️ Technical Architecture
 
-### **Stack Technologique**
+### **Technology Stack**
 
 ```
 Frontend (React + TypeScript)

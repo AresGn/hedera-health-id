@@ -4,12 +4,15 @@ import {
   Stethoscope, Users, Calendar, Clock,
   Plus, LogOut, Menu, X,
   AlertTriangle, BarChart3, User, Heart, FileText,
-  QrCode, ChevronRight, TrendingUp
+  QrCode, ChevronRight, TrendingUp, Save, CheckCircle,
+  Search
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
 import QRScanner from '@/components/QRScanner'
 import { PatientQRData } from '@/services/qrCodeService'
 import { getMedecinData, clearMedecinData } from '@/utils/storage'
+import { useApi } from '@/services/api'
 
 interface MedecinData {
   id: string
@@ -53,9 +56,60 @@ interface UpcomingAppointment {
   isUrgent: boolean
 }
 
+interface ConsultationFormData {
+  type: string
+  motif: string
+  diagnostic: string
+  prescription: string
+  examensPrescrits: string[]
+  donneesVitales: {
+    poids: string
+    taille: string
+    tensionArterielle: string
+    temperature: string
+    pouls: string
+  }
+  notes: string
+  statut: 'programmee' | 'en_cours' | 'terminee'
+}
+
+// interface Medicament {
+//   nom: string
+//   dosage: string
+//   frequence: string
+//   duree: string
+// }
+
+interface PatientData {
+  id: string
+  patientId: string
+  nom: string
+  prenom: string
+  dateNaissance: string
+  age: number
+  groupeSanguin?: string
+  allergies: string[]
+  maladiesChroniques: string[]
+  hopitalPrincipal: string
+}
+
+// const typesConsultation = [
+//   { value: 'consultation_generale', label: 'General consultation' },
+//   { value: 'urgence', label: 'Emergency' },
+//   { value: 'suivi', label: 'Medical follow-up' },
+//   { value: 'suivi_cardiologique', label: 'Cardiology follow-up' },
+//   { value: 'suivi_diabetique', label: 'Diabetes follow-up' },
+//   { value: 'pediatrie', label: 'Pediatrics' },
+//   { value: 'gynecologie', label: 'Gynecology' },
+//   { value: 'dermatologie', label: 'Dermatology' },
+//   { value: 'ophtalmologie', label: 'Ophthalmology' },
+//   { value: 'oto_rhino_laryngologie', label: 'ENT' }
+// ]
+
 const MedecinDashboardModern = () => {
   const navigate = useNavigate()
-  
+  const api = useApi()
+
   // États
   const [medecin, setMedecin] = useState<MedecinData | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -75,6 +129,27 @@ const MedecinDashboardModern = () => {
   
   const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([])
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([])
+
+  // États pour le formulaire de consultation intégré
+  const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
+  const [consultationForm, setConsultationForm] = useState<ConsultationFormData>({
+    type: '',
+    motif: '',
+    diagnostic: '',
+    prescription: '',
+    examensPrescrits: [],
+    donneesVitales: {
+      poids: '',
+      taille: '',
+      tensionArterielle: '',
+      temperature: '',
+      pouls: ''
+    },
+    notes: '',
+    statut: 'en_cours'
+  })
+  // const [medicaments, setMedicaments] = useState<Medicament[]>([])
+  const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false)
 
   // Chargement des données
   useEffect(() => {
@@ -192,7 +267,26 @@ const MedecinDashboardModern = () => {
 
   const handleQRScan = (data: PatientQRData) => {
     setShowQRScanner(false)
-    navigate(`/medecin/patient/${data.patientId}`)
+
+    // Si on est dans l'onglet consultation, sélectionner le patient pour la consultation
+    if (activeTab === 'consultation') {
+      const patientData: PatientData = {
+        id: data.patientId,
+        patientId: data.patientId,
+        nom: data.nom,
+        prenom: data.prenom,
+        dateNaissance: data.dateNaissance || '',
+        age: 0, // Calculé côté client si nécessaire
+        groupeSanguin: data.groupeSanguin || '',
+        allergies: [],
+        maladiesChroniques: [],
+        hopitalPrincipal: ''
+      }
+      setSelectedPatient(patientData)
+    } else {
+      // Sinon, naviguer vers le dossier patient
+      navigate(`/medecin/patient/${data.patientId}`)
+    }
   }
 
   const handleLogout = () => {
@@ -222,6 +316,106 @@ const MedecinDashboardModern = () => {
       month: '2-digit',
       year: 'numeric'
     })
+  }
+
+  // Fonctions pour le formulaire de consultation
+  const handleNewConsultation = (patient?: PatientData) => {
+    if (patient) {
+      setSelectedPatient(patient)
+    }
+    setActiveTab('consultation')
+  }
+
+  const handleConsultationFormChange = (field: string, value: any) => {
+    if (field.startsWith('donneesVitales.')) {
+      const vitalField = field.split('.')[1]
+      setConsultationForm(prev => ({
+        ...prev,
+        donneesVitales: {
+          ...prev.donneesVitales,
+          [vitalField]: value
+        }
+      }))
+    } else {
+      setConsultationForm(prev => ({
+        ...prev,
+        [field]: value
+      }))
+    }
+  }
+
+  // const addMedicament = () => {
+  //   setMedicaments(prev => [...prev, { nom: '', dosage: '', frequence: '', duree: '' }])
+  // }
+
+  // const updateMedicament = (index: number, field: string, value: string) => {
+  //   setMedicaments(prev => prev.map((med, i) =>
+  //     i === index ? { ...med, [field]: value } : med
+  //   ))
+  // }
+
+  // const removeMedicament = (index: number) => {
+  //   setMedicaments(prev => prev.filter((_, i) => i !== index))
+  // }
+
+  const handleSubmitConsultation = async (statut: 'en_cours' | 'terminee') => {
+    if (!selectedPatient || !medecin) return
+
+    setIsSubmittingConsultation(true)
+    try {
+      const consultationData = {
+        patientId: selectedPatient.id,
+        medecinId: medecin.id,
+        hopitalId: medecin.hopital.code,
+        type: consultationForm.type,
+        motif: consultationForm.motif,
+        diagnostic: consultationForm.diagnostic,
+        prescription: consultationForm.prescription,
+        examensPrescrits: consultationForm.examensPrescrits,
+        poids: consultationForm.donneesVitales.poids,
+        taille: consultationForm.donneesVitales.taille,
+        tensionArterielle: consultationForm.donneesVitales.tensionArterielle,
+        temperature: consultationForm.donneesVitales.temperature,
+        pouls: consultationForm.donneesVitales.pouls,
+        notes: consultationForm.notes,
+        statut: statut === 'terminee' ? 'TERMINEE' : 'EN_COURS'
+      }
+
+      const response = await api.createConsultation(consultationData)
+
+      if (response.success) {
+        // Réinitialiser le formulaire
+        setConsultationForm({
+          type: '',
+          motif: '',
+          diagnostic: '',
+          prescription: '',
+          examensPrescrits: [],
+          donneesVitales: {
+            poids: '',
+            taille: '',
+            tensionArterielle: '',
+            temperature: '',
+            pouls: ''
+          },
+          notes: '',
+          statut: 'en_cours'
+        })
+        setSelectedPatient(null)
+        // setMedicaments([])
+        setActiveTab('overview')
+
+        // Recharger les données du dashboard
+        await loadMedecinStats(medecin.id)
+        await loadRecentPatients(medecin.id)
+      } else {
+        throw new Error(response.error || 'Erreur lors de la création de la consultation')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la soumission:', error)
+    } finally {
+      setIsSubmittingConsultation(false)
+    }
   }
 
   if (loading) {
@@ -356,13 +550,13 @@ const MedecinDashboardModern = () => {
                 <span className="font-medium">Scan QR Code</span>
               </button>
 
-              <Link
-                to="/medecin/consultation/new"
+              <button
+                onClick={() => handleNewConsultation()}
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Plus className="h-5 w-5" />
                 <span className="font-medium">New Consultation</span>
-              </Link>
+              </button>
             </div>
 
             <div className="border-t pt-4 mt-4">
@@ -412,12 +606,13 @@ const MedecinDashboardModern = () => {
                     <QrCode className="h-4 w-4 mr-2" />
                     Scan QR Code
                   </Button>
-                  <Link to="/medecin/consultation/new">
-                    <Button className="bg-green-600 hover:bg-green-700 text-white">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Consultation
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => handleNewConsultation()}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Consultation
+                  </Button>
                 </div>
               </div>
             </div>
@@ -637,8 +832,8 @@ const MedecinDashboardModern = () => {
                       </div>
                     </button>
 
-                    <Link
-                      to="/medecin/consultation/new"
+                    <button
+                      onClick={() => handleNewConsultation()}
                       className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                     >
                       <Plus className="h-6 w-6 text-green-600" />
@@ -646,7 +841,7 @@ const MedecinDashboardModern = () => {
                         <p className="font-medium text-gray-900">New Consultation</p>
                         <p className="text-sm text-gray-600">Create new record</p>
                       </div>
-                    </Link>
+                    </button>
 
                     <Link
                       to="/medecin/patients"
@@ -694,11 +889,12 @@ const MedecinDashboardModern = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">My Consultations</h3>
                 <p className="text-gray-600">Consultation management interface under development...</p>
                 <div className="mt-4">
-                  <Link to="/medecin/consultation/new">
-                    <Button className="bg-green-600 hover:bg-green-700 text-white">
-                      New Consultation
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => handleNewConsultation()}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    New Consultation
+                  </Button>
                 </div>
               </div>
             )}
@@ -712,6 +908,213 @@ const MedecinDashboardModern = () => {
                     View full schedule
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'consultation' && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">New Consultation</h3>
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className="p-2 rounded-md text-gray-400 hover:bg-gray-100"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {!selectedPatient ? (
+                  <div className="text-center py-8">
+                    <div className="mb-4">
+                      <User className="h-12 w-12 text-gray-400 mx-auto" />
+                    </div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">Select a Patient</h4>
+                    <p className="text-gray-600 mb-4">Scan a QR code or search for a patient to start a consultation</p>
+                    <div className="flex justify-center space-x-4">
+                      <Button
+                        onClick={() => setShowQRScanner(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Scan QR Code
+                      </Button>
+                      <Button
+                        onClick={() => setActiveTab('patients')}
+                        className="bg-gray-600 hover:bg-gray-700 text-white"
+                      >
+                        <Search className="h-4 w-4 mr-2" />
+                        Search Patient
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Patient Info */}
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {selectedPatient.prenom} {selectedPatient.nom}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            ID: {selectedPatient.patientId} • Age: {selectedPatient.age} years
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Consultation Form */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Left Column */}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Consultation Type
+                          </label>
+                          <select
+                            value={consultationForm.type}
+                            onChange={(e) => handleConsultationFormChange('type', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select type</option>
+                            <option value="consultation_generale">General consultation</option>
+                            <option value="urgence">Emergency</option>
+                            <option value="suivi">Medical follow-up</option>
+                            <option value="suivi_cardiologique">Cardiology follow-up</option>
+                            <option value="suivi_diabetique">Diabetes follow-up</option>
+                            <option value="pediatrie">Pediatrics</option>
+                            <option value="gynecologie">Gynecology</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Reason for Visit
+                          </label>
+                          <textarea
+                            value={consultationForm.motif}
+                            onChange={(e) => handleConsultationFormChange('motif', e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Describe the reason for this consultation..."
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Diagnosis
+                          </label>
+                          <textarea
+                            value={consultationForm.diagnostic}
+                            onChange={(e) => handleConsultationFormChange('diagnostic', e.target.value)}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter diagnosis..."
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right Column */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-3">Vital Signs</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1">Weight (kg)</label>
+                              <Input
+                                type="number"
+                                value={consultationForm.donneesVitales.poids}
+                                onChange={(e) => handleConsultationFormChange('donneesVitales.poids', e.target.value)}
+                                placeholder="70"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1">Height (cm)</label>
+                              <Input
+                                type="number"
+                                value={consultationForm.donneesVitales.taille}
+                                onChange={(e) => handleConsultationFormChange('donneesVitales.taille', e.target.value)}
+                                placeholder="170"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1">Blood Pressure</label>
+                              <Input
+                                value={consultationForm.donneesVitales.tensionArterielle}
+                                onChange={(e) => handleConsultationFormChange('donneesVitales.tensionArterielle', e.target.value)}
+                                placeholder="120/80"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1">Temperature (°C)</label>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={consultationForm.donneesVitales.temperature}
+                                onChange={(e) => handleConsultationFormChange('donneesVitales.temperature', e.target.value)}
+                                placeholder="36.5"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <label className="block text-xs text-gray-600 mb-1">Pulse (bpm)</label>
+                              <Input
+                                type="number"
+                                value={consultationForm.donneesVitales.pouls}
+                                onChange={(e) => handleConsultationFormChange('donneesVitales.pouls', e.target.value)}
+                                placeholder="72"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Notes
+                          </label>
+                          <textarea
+                            value={consultationForm.notes}
+                            onChange={(e) => handleConsultationFormChange('notes', e.target.value)}
+                            rows={4}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Additional notes..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end space-x-4 pt-6 border-t">
+                      <Button
+                        onClick={() => {
+                          setSelectedPatient(null)
+                          setActiveTab('overview')
+                        }}
+                        className="bg-gray-600 hover:bg-gray-700 text-white"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() => handleSubmitConsultation('en_cours')}
+                        disabled={isSubmittingConsultation}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Draft
+                      </Button>
+                      <Button
+                        onClick={() => handleSubmitConsultation('terminee')}
+                        disabled={isSubmittingConsultation}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Complete Consultation
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

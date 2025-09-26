@@ -165,8 +165,10 @@ app.get('/api/v1/patients', async (req, res) => {
 
     res.json({
       success: true,
-      data: patients,
-      count: patients.length
+      data: {
+        data: patients,
+        count: patients.length
+      }
     })
   } catch (error) {
     res.status(500).json({
@@ -391,14 +393,28 @@ app.post('/api/v1/consultations', async (req, res) => {
       diagnostic,
       prescription,
       examensPrescrits,
-      poids,
-      taille,
-      tensionArterielle,
-      temperature,
-      pouls,
+      donneesVitales,
       notes,
       statut = 'PROGRAMMEE'
     } = req.body
+
+    // Récupérer l'hopitalId du médecin si non fourni
+    let finalHopitalId = hopitalId
+    if (!finalHopitalId && medecinId) {
+      const medecin = await prisma.medecin.findUnique({
+        where: { id: medecinId },
+        select: { hopitalId: true }
+      })
+      finalHopitalId = medecin?.hopitalId
+    }
+
+    if (!finalHopitalId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Hospital ID required',
+        message: 'hopitalId est requis ou le médecin doit être associé à un hôpital'
+      })
+    }
 
     // Générer un ID unique pour la consultation
     const consultationId = `CONS-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
@@ -408,18 +424,18 @@ app.post('/api/v1/consultations', async (req, res) => {
         consultationId,
         patientId,
         medecinId,
-        hopitalId,
+        hopitalId: finalHopitalId,
         dateConsultation: new Date(),
         type,
         motif,
         diagnostic,
         prescription,
         examensPrescrits: examensPrescrits || [],
-        poids: poids ? parseFloat(poids) : null,
-        taille: taille ? parseFloat(taille) : null,
-        tensionArterielle,
-        temperature: temperature ? parseFloat(temperature) : null,
-        pouls: pouls ? parseInt(pouls) : null,
+        poids: donneesVitales?.poids ? parseFloat(donneesVitales.poids) : null,
+        taille: donneesVitales?.taille ? parseFloat(donneesVitales.taille) : null,
+        tensionArterielle: donneesVitales?.tensionArterielle || null,
+        temperature: donneesVitales?.temperature ? parseFloat(donneesVitales.temperature) : null,
+        pouls: donneesVitales?.pouls ? parseInt(donneesVitales.pouls) : null,
         statut,
         notes
       },
@@ -447,13 +463,13 @@ app.post('/api/v1/consultations', async (req, res) => {
       }
     })
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: consultation,
       message: 'Consultation créée avec succès'
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to create consultation',
       message: error instanceof Error ? error.message : 'Unknown error'

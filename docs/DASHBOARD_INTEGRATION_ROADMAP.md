@@ -1,31 +1,31 @@
-# 🎯 Feuille de Route d'Intégration des Tableaux de Bord
+# 🎯 Dashboard Integration Roadmap
 
-## Vue d'ensemble de l'Architecture d'Intégration
+## Integration Architecture Overview
 
-Cette feuille de route détaille comment les **3 tableaux de bord** (Patient, Médecin, Hôpital) se connectent aux **contrats intelligents Hedera** via l'**API backend**, créant un écosystème de santé décentralisé et interopérable.
+This roadmap details how the **3 dashboards** (Patient, Doctor, Hospital) connect to **Hedera smart contracts** via the **backend API**, creating a decentralized and interoperable healthcare ecosystem.
 
-### Architecture Globale
+### Global Architecture
 
 ```
 Frontend Dashboards
-├── PatientDashboard.tsx      # Interface patient
-├── MedecinDashboard.tsx      # Interface médecin
-└── HospitalDashboard.tsx     # Interface hôpital
+├── PatientDashboard.tsx      # Patient interface
+├── MedecinDashboard.tsx      # Doctor interface
+└── HospitalDashboard.tsx     # Hospital interface
         ↓
 Backend API Layer
-├── /api/hedera/patients      # Routes patients
-├── /api/hedera/medical-records # Routes dossiers
-└── /api/hedera/access-control  # Routes permissions
+├── /api/hedera/patients      # Patient routes
+├── /api/hedera/medical-records # Medical record routes
+└── /api/hedera/access-control  # Permission routes
         ↓
 Hedera Services Layer
-├── PatientIdentityService    # Service identités
-├── MedicalRecordsService     # Service dossiers
-└── AccessControlService      # Service permissions
+├── PatientIdentityService    # Identity service
+├── MedicalRecordsService     # Medical records service
+└── AccessControlService      # Permission service
         ↓
 Hedera Blockchain
-├── PatientIdentityContract   # Contrat identités
-├── MedicalRecordsContract    # Contrat dossiers
-└── AccessControlContract     # Contrat permissions
+├── PatientIdentityContract   # Identity contract
+├── MedicalRecordsContract    # Medical records contract
+└── AccessControlContract     # Permission contract
 ```
 
 ---
