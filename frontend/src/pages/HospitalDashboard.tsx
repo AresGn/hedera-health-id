@@ -206,7 +206,22 @@ export default function HospitalDashboard() {
 
     } catch (error) {
       console.error('Erreur chargement données:', error)
-  setError('Error loading data')
+      setError('Error loading data')
+
+      // Set default stats to prevent crashes
+      const defaultStats: HospitalStats = {
+        patients: { actifs: 0, croissance: '0%' },
+        consultations: { total: 0, croissance: '0%' },
+        economies: { montant: 0, unite: 'FCFA' },
+        temps: { economise: 0, unite: 'hours' },
+        adoption: {
+          systeme: 0,
+          medecinsActifs: 0,
+          patientsInscrits: 0,
+          satisfaction: 0
+        }
+      }
+      setStats(defaultStats)
     } finally {
       setIsLoading(false)
     }
@@ -431,15 +446,15 @@ export default function HospitalDashboard() {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 {/* Statistiques principales */}
-                {stats && (
+                {stats && stats.patients && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white rounded-xl shadow-sm border p-6">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Active Patients</p>
-                          <p className="text-2xl font-bold text-gray-900">{stats.patients.actifs}</p>
+                          <p className="text-2xl font-bold text-gray-900">{stats.patients?.actifs || 0}</p>
                           <p className="text-xs text-green-600 mt-1">
-                            +{stats.patients.croissance} this month
+                            +{stats.patients?.croissance || '0%'} this month
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -452,9 +467,9 @@ export default function HospitalDashboard() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600">Consultations</p>
-                          <p className="text-2xl font-bold text-gray-900">{stats.consultations.total}</p>
+                          <p className="text-2xl font-bold text-gray-900">{stats.consultations?.total || 0}</p>
                           <p className="text-xs text-green-600 mt-1">
-                            +{stats.consultations.croissance} this month
+                            +{stats.consultations?.croissance || '0%'} this month
                           </p>
                         </div>
                         <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
@@ -468,7 +483,7 @@ export default function HospitalDashboard() {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Savings</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            {stats.economies.montant} {stats.economies.unite}
+                            {stats.economies?.montant || 0} {stats.economies?.unite || 'FCFA'}
                           </p>
                           <p className="text-xs text-green-600 mt-1">
                             Cost reduction
@@ -485,7 +500,7 @@ export default function HospitalDashboard() {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Time Saved</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            {stats.temps.economise} {stats.temps.unite}
+                            {stats.temps?.economise || 0} {stats.temps?.unite || 'hours'}
                           </p>
                           <p className="text-xs text-green-600 mt-1">
                             Improved efficiency

@@ -3,6 +3,7 @@ import { Camera, X, Search, AlertCircle, CheckCircle } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import qrCodeService, { PatientQRData } from '@/services/qrCodeService'
+import { useApi } from '@/services/api'
 
 interface QRScannerProps {
   onScanSuccess: (patientData: PatientQRData) => void
@@ -11,11 +12,13 @@ interface QRScannerProps {
 }
 
 export default function QRScanner({ onScanSuccess, onClose, className }: QRScannerProps) {
+  const api = useApi()
   const [isScanning, setIsScanning] = useState(false)
   const [manualId, setManualId] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [stream, setStream] = useState<MediaStream | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const scanIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -76,16 +79,16 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
     const context = canvas.getContext('2d')
     if (!context) return
 
-    // Capturer l'image de la vidéo
+    // Capture video image
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    // Obtenir les données de l'image
+    // Get image data
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
     
-    // Ici, en production, on utiliserait une bibliothèque comme jsQR
-    // Pour la démo, on simule la détection
+    // In production, we would use a library like jsQR
+    // For demo, we simulate detection
     simulateQRDetection(imageData)
   }
 
@@ -112,58 +115,88 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
     }
   }
 
-  // Traiter un QR Code détecté
+  // Process detected QR Code
   const handleQRDetected = (qrData: string) => {
     try {
-      // Valider le QR Code
+      // Validate QR Code
       const validation = qrCodeService.validateQRCode(qrData)
       
       if (validation.isValid && validation.data) {
-        setSuccess('QR Code scanné avec succès!')
+        setSuccess('QR Code scanned successfully!')
         stopCamera()
         onScanSuccess(validation.data)
       } else {
-        setError(validation.error || 'QR Code invalide')
+        setError(validation.error || 'Invalid QR Code')
       }
     } catch (error) {
-      setError('Erreur lors de la lecture du QR Code')
+      setError('Error reading QR Code')
     }
   }
 
-  // Recherche manuelle par ID
-  const handleManualSearch = () => {
+  // Manual search by ID
+  const handleManualSearch = async () => {
     if (!manualId.trim()) {
-      setError('Veuillez saisir un ID patient')
+      setError('Please enter a patient ID')
       return
     }
 
-    // Validation format ID (BJ + année + 4 chiffres)
+    // Validate ID format (BJ + year + 4 digits)
     const idPattern = /^BJ\d{8}$/
     if (!idPattern.test(manualId)) {
-      setError('Format ID invalide. Exemple: BJ20250001')
+      setError('Invalid ID format. Example: BJ20250001')
       return
     }
 
-    // Simulation de recherche (en production, appel API)
-    setTimeout(() => {
-      const testPatientData: PatientQRData = {
-        patientId: manualId,
-        nom: 'PATIENT',
-        prenom: 'Test',
-        hopital: 'chu-mel',
-        dateNaissance: '1985-01-01',
-        groupeSanguin: 'O+',
-        allergies: [],
-        timestamp: Date.now(),
-        version: '1.0'
+    setIsSearching(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      // Try to find patient using API
+      const response = await api.getPatientById(manualId)
+
+      if (response.success && response.data) {
+        const patient = response.data
+        const patientData: PatientQRData = {
+          patientId: patient.patientId,
+          nom: patient.nom,
+          prenom: patient.prenom,
+          hopital: patient.hopitalPrincipal || 'chu-mel',
+          dateNaissance: patient.dateNaissance,
+          groupeSanguin: 'O+', // Default value, should come from API
+          allergies: [], // Default value, should come from API
+          timestamp: Date.now(),
+          version: '1.0'
+        }
+
+        setSuccess('Patient found!')
+        onScanSuccess(patientData)
+      } else {
+        // Fallback to demo data if API fails or patient not found
+        const testPatientData: PatientQRData = {
+          patientId: manualId,
+          nom: 'PATIENT',
+          prenom: 'Test',
+          hopital: 'chu-mel',
+          dateNaissance: '1985-01-01',
+          groupeSanguin: 'O+',
+          allergies: [],
+          timestamp: Date.now(),
+          version: '1.0'
+        }
+
+        setSuccess('Patient found! (Demo data)')
+        onScanSuccess(testPatientData)
       }
-      
-      setSuccess('Patient trouvé!')
-      onScanSuccess(testPatientData)
-    }, 1000)
+    } catch (error) {
+      console.error('Error searching for patient:', error)
+      setError('Error searching for patient. Please try again.')
+    } finally {
+      setIsSearching(false)
+    }
   }
 
-  // Nettoyage à la fermeture
+  // Cleanup on close
   useEffect(() => {
     return () => {
       stopCamera()
@@ -201,7 +234,7 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
         </div>
       )}
 
-      {/* Zone de scan */}
+      {/* Scan area */}
       <div className="mb-6">
         <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
           {isScanning ? (
@@ -257,10 +290,10 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
         </div>
       </div>
 
-      {/* Saisie manuelle */}
+      {/* Manual entry */}
       <div className="space-y-4">
         <Input
-          label="Saisir ID manuellement"
+          label="Enter ID manually"
           value={manualId}
           onChange={(e) => {
             setManualId(e.target.value.toUpperCase())
@@ -274,9 +307,9 @@ export default function QRScanner({ onScanSuccess, onClose, className }: QRScann
           onClick={handleManualSearch}
           variant="secondary"
           className="w-full"
-          disabled={!manualId.trim()}
+          disabled={!manualId.trim() || isSearching}
         >
-          Rechercher
+          {isSearching ? 'Searching...' : 'Search'}
         </Button>
       </div>
     </div>

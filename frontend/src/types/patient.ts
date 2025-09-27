@@ -16,6 +16,8 @@ export interface Consultation {
   type: string
   statut: 'terminee' | 'programmee' | 'annulee'
   resume?: string
+  diagnostic?: string
+  traitement?: string
 }
 
 export interface MedecinAutorise {

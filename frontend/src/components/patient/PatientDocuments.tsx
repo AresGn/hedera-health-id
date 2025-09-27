@@ -42,7 +42,7 @@ export default function PatientDocuments() {
       const patientDocs = await fileStorage.getPatientFiles(sessionData.patientId)
       setDocuments(patientDocs)
     } catch (error) {
-      console.error('Erreur lors du chargement des documents:', error)
+      console.error('Error loading documents:', error)
     } finally {
       setIsLoading(false)
     }
@@ -69,13 +69,13 @@ export default function PatientDocuments() {
         (progress) => setUploadProgress(progress)
       )
       
-      // Ajouter les nouveaux fichiers à la liste
+      // Add new files to the list
       setDocuments(prev => [...prev, ...uploadedFiles])
       setSelectedFiles([])
       setShowUpload(false)
       setUploadProgress([])
     } catch (error) {
-      console.error('Erreur lors de l\'upload:', error)
+      console.error('Error during upload:', error)
     } finally {
       setIsUploading(false)
     }
@@ -109,7 +109,7 @@ export default function PatientDocuments() {
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hedera-500"></div>
-          <span className="ml-2 text-gray-600">Chargement des documents...</span>
+          <span className="ml-2 text-gray-600">Loading documents...</span>
         </div>
       </div>
     )
@@ -122,7 +122,7 @@ export default function PatientDocuments() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="flex items-center space-x-3 mb-4 sm:mb-0">
             <FileText className="h-6 w-6 text-blue-500" />
-            <h3 className="text-xl font-semibold text-gray-800">Mes Documents</h3>
+            <h3 className="text-xl font-semibold text-gray-800">My Documents</h3>
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -134,11 +134,11 @@ export default function PatientDocuments() {
           </div>
         </div>
 
-        {/* Barre de recherche et actions */}
+        {/* Search bar and actions */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Rechercher dans mes documents..."
+              placeholder="Search in my documents..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4" />}
@@ -158,10 +158,10 @@ export default function PatientDocuments() {
       {/* Zone d'upload */}
       {showUpload && (
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h4 className="font-semibold text-gray-800 mb-4">Ajouter des documents</h4>
+          <h4 className="font-semibold text-gray-800 mb-4">Add Documents</h4>
           
           <FileUpload
-            label="Sélectionner des fichiers"
+            label="Select Files"
             accept=".pdf,.jpg,.jpeg,.png,.gif"
             multiple={true}
             onFileSelect={handleFileSelect}
@@ -218,7 +218,7 @@ export default function PatientDocuments() {
         </div>
       )}
 
-      {/* Liste des documents */}
+      {/* Documents List */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {filteredDocuments.length > 0 ? (
           <div className="divide-y divide-gray-200">
@@ -258,11 +258,11 @@ export default function PatientDocuments() {
         ) : (
           <div className="text-center py-12">
             <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun document</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Documents</h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm 
-                ? 'Aucun document trouvé pour cette recherche' 
-                : 'Vous n\'avez pas encore ajouté de documents'
+              {searchTerm
+                ? 'No documents found for this search'
+                : 'You haven\'t added any documents yet'
               }
             </p>
             {!searchTerm && (

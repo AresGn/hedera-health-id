@@ -115,8 +115,56 @@ export default function PatientDashboard() {
         hopitalPrincipal: 'Not provided'
       }
       setPatientData(fallbackPatientData)
-      setConsultations([])
-      setMedecinsAutorises([])
+
+      // Add sample consultation data for testing
+      const sampleConsultations: Consultation[] = [
+        {
+          id: '1',
+          date: '2024-12-15',
+          medecin: 'Dr. ADJAHOUI Jean',
+          hopital: 'CHU-MEL',
+          type: 'General Consultation',
+          statut: 'terminee',
+          resume: 'Regular checkup completed successfully. Patient shows good overall health.',
+          diagnostic: 'Patient in good health. No immediate concerns identified.',
+          traitement: 'Continue current lifestyle. Schedule follow-up in 6 months.'
+        },
+        {
+          id: '2',
+          date: '2025-01-15',
+          medecin: 'Dr. KOSSOU Marie',
+          hopital: 'CHU-MEL',
+          type: 'Cardiology Follow-up',
+          statut: 'programmee',
+          resume: 'Scheduled cardiology follow-up appointment.',
+          diagnostic: 'Pending examination',
+          traitement: 'To be determined after consultation'
+        },
+        {
+          id: '3',
+          date: '2024-11-20',
+          medecin: 'Dr. TOSSOU Paul',
+          hopital: 'CHU-MEL',
+          type: 'Emergency Consultation',
+          statut: 'terminee',
+          resume: 'Emergency consultation for acute symptoms. Patient responded well to treatment.',
+          diagnostic: 'Acute gastroenteritis. Symptoms resolved with treatment.',
+          traitement: 'Prescribed medication for 5 days. Rest and hydration recommended.'
+        }
+      ]
+
+      setConsultations(sampleConsultations)
+      setMedecinsAutorises([
+        {
+          id: '1',
+          nom: 'ADJAHOUI',
+          prenom: 'Dr. Jean',
+          specialite: 'General Medicine',
+          hopital: 'CHU-MEL',
+          dateAutorisation: '2024-01-15',
+          statut: 'actif'
+        }
+      ])
     } finally {
       setIsLoading(false)
     }

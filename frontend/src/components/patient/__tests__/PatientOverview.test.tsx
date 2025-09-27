@@ -111,6 +111,6 @@ describe('PatientOverview', () => {
       />
     )
 
-    expect(screen.getByText('Aucun RDV programmé')).toBeInTheDocument()
+    expect(screen.getByText('No scheduled appointments')).toBeInTheDocument()
   })
 })
