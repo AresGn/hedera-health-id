@@ -19,6 +19,11 @@ interface PatientFormData {
   motDePasse: string
   confirmerMotDePasse: string
   hopitalPrincipal: string
+  ville?: string
+  groupeSanguin?: string
+  allergies?: string
+  maladiesChroniques?: string
+  contactUrgence?: string
   accepteConditions: boolean
   consentementDonnees: boolean
 }
@@ -32,6 +37,11 @@ interface PatientFormErrors {
   motDePasse?: string
   confirmerMotDePasse?: string
   hopitalPrincipal?: string
+  ville?: string
+  groupeSanguin?: string
+  allergies?: string
+  maladiesChroniques?: string
+  contactUrgence?: string
   accepteConditions?: string
   consentementDonnees?: string
 }
@@ -189,8 +199,8 @@ export default function PatientRegistration() {
         ville: formData.ville || undefined,
         hopitalPrincipal: formData.hopitalPrincipal,
         groupeSanguin: formData.groupeSanguin || undefined,
-        allergies: formData.allergies ? formData.allergies.split(',').map(a => a.trim()) : undefined,
-        maladiesChroniques: formData.maladiesChroniques ? formData.maladiesChroniques.split(',').map(m => m.trim()) : undefined,
+        allergies: formData.allergies ? formData.allergies.split(',').map((a: string) => a.trim()) : undefined,
+        maladiesChroniques: formData.maladiesChroniques ? formData.maladiesChroniques.split(',').map((m: string) => m.trim()) : undefined,
         contactUrgence: formData.contactUrgence || undefined,
         password: formData.motDePasse
       })
