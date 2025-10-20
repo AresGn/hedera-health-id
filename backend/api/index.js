@@ -1,22 +1,27 @@
-import express from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import dotenv from 'dotenv'
-import { config, validateConfig } from '../src/config/app.config'
-import { connectDatabase } from '../src/config/database.config'
-import prisma from '../src/config/database.config'
-import statistiquesRouter from '../src/routes/statistiques'
+const express = require('express')
+const cors = require('cors')
+const helmet = require('helmet')
+const dotenv = require('dotenv')
+const { PrismaClient } = require('@prisma/client')
 
 // Charger les variables d'environnement
 dotenv.config()
 
-// Valider la configuration
-validateConfig()
+// Initialiser Prisma
+const prisma = new PrismaClient()
+
+// Configuration simplifiée
+const config = {
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://hedera-health-id.vercel.app',
+  API_VERSION: process.env.API_VERSION || '1.0.0',
+  DATABASE_URL: process.env.DATABASE_URL
+}
 
 const app = express()
 
-// Middlewares de sécurité
-app.use(helmet())
+// Middlewares de sécurité - désactivé pour Vercel
+// app.use(helmet())
 
 // Configuration CORS pour accepter plusieurs origines
 const allowedOrigins = [
@@ -64,6 +69,271 @@ app.use(cors({
 // Middlewares de parsing
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+
+// Page d'accueil HTML
+app.get('/', async (req, res) => {
+  let dbStatus = 'Unknown'
+  let dbColor = 'gray'
+  
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    dbStatus = 'Connected'
+    dbColor = 'green'
+  } catch (error) {
+    dbStatus = 'Disconnected'
+    dbColor = 'red'
+  }
+  
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Hedera Health ID - Backend API</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .container {
+          background: white;
+          border-radius: 20px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          padding: 40px;
+          max-width: 800px;
+          width: 100%;
+        }
+        h1 {
+          color: #333;
+          margin-bottom: 10px;
+          font-size: 2.5em;
+        }
+        .subtitle {
+          color: #666;
+          margin-bottom: 30px;
+          font-size: 1.1em;
+        }
+        .status-card {
+          background: #f7f9fc;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 30px;
+        }
+        .status-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 15px;
+          align-items: center;
+        }
+        .status-label {
+          font-weight: 600;
+          color: #555;
+        }
+        .status-value {
+          font-weight: 500;
+        }
+        .status-badge {
+          padding: 5px 12px;
+          border-radius: 20px;
+          color: white;
+          font-size: 0.9em;
+        }
+        .status-green { background: #10b981; }
+        .status-red { background: #ef4444; }
+        .status-gray { background: #6b7280; }
+        .endpoints-section {
+          margin-top: 30px;
+        }
+        h2 {
+          color: #333;
+          margin-bottom: 20px;
+          font-size: 1.8em;
+        }
+        .endpoint-group {
+          margin-bottom: 25px;
+        }
+        h3 {
+          color: #667eea;
+          margin-bottom: 10px;
+          font-size: 1.3em;
+        }
+        .endpoint-list {
+          background: #f7f9fc;
+          border-radius: 10px;
+          padding: 15px;
+        }
+        .endpoint {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+          padding: 8px;
+          background: white;
+          border-radius: 5px;
+        }
+        .method {
+          padding: 4px 8px;
+          border-radius: 4px;
+          color: white;
+          font-size: 0.85em;
+          font-weight: 600;
+          margin-right: 12px;
+          min-width: 60px;
+          text-align: center;
+        }
+        .method-get { background: #10b981; }
+        .method-post { background: #3b82f6; }
+        .method-put { background: #f59e0b; }
+        .method-delete { background: #ef4444; }
+        .path {
+          color: #333;
+          font-family: 'Courier New', monospace;
+          font-size: 0.95em;
+        }
+        .footer {
+          margin-top: 40px;
+          text-align: center;
+          color: #999;
+          font-size: 0.9em;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>🏥 Hedera Health ID</h1>
+        <p class="subtitle">Backend API Server</p>
+        
+        <div class="status-card">
+          <div class="status-row">
+            <span class="status-label">Status:</span>
+            <span class="status-badge status-green">Online</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Database:</span>
+            <span class="status-badge status-${dbColor}">${dbStatus}</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Version:</span>
+            <span class="status-value">${config.API_VERSION}</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Environment:</span>
+            <span class="status-value">${config.NODE_ENV}</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Timestamp:</span>
+            <span class="status-value">${new Date().toISOString()}</span>
+          </div>
+        </div>
+        
+        <div class="endpoints-section">
+          <h2>📡 Available Endpoints</h2>
+          
+          <div class="endpoint-group">
+            <h3>Health Check</h3>
+            <div class="endpoint-list">
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/health</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/test</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="endpoint-group">
+            <h3>Authentication</h3>
+            <div class="endpoint-list">
+              <div class="endpoint">
+                <span class="method method-post">POST</span>
+                <span class="path">/api/v1/auth/register</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-post">POST</span>
+                <span class="path">/api/v1/auth/login</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="endpoint-group">
+            <h3>Patient Management</h3>
+            <div class="endpoint-list">
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/patients</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-post">POST</span>
+                <span class="path">/api/v1/patients</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/patients/:id</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-put">PUT</span>
+                <span class="path">/api/v1/patients/:id</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-delete">DELETE</span>
+                <span class="path">/api/v1/patients/:id</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="endpoint-group">
+            <h3>Medical Records</h3>
+            <div class="endpoint-list">
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/consultations</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-post">POST</span>
+                <span class="path">/api/v1/consultations</span>
+              </div>
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/patients/:id/consultations</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="endpoint-group">
+            <h3>Statistics</h3>
+            <div class="endpoint-list">
+              <div class="endpoint">
+                <span class="method method-get">GET</span>
+                <span class="path">/api/v1/statistiques/dashboard</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>© 2024 Hedera Health ID - MVP Version</p>
+          <p>Built with Express.js, Prisma & Hedera Hashgraph</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+  
+  res.setHeader('Content-Type', 'text/html')
+  res.send(html)
+})
 
 // Route de santé
 app.get('/health', async (req, res) => {
@@ -798,7 +1068,34 @@ app.post('/api/v1/auth/medecin', async (req, res) => {
 })
 
 // Routes API
-app.use('/api/v1/statistiques', statistiquesRouter)
+// Route de statistiques
+app.get('/api/v1/statistiques/dashboard', async (req, res) => {
+  try {
+    const stats = await prisma.$transaction([
+      prisma.hopital.count(),
+      prisma.medecin.count(),
+      prisma.patient.count(),
+      prisma.consultation.count(),
+    ])
+    
+    return res.json({
+      success: true,
+      data: {
+        totalHopitaux: stats[0],
+        totalMedecins: stats[1],
+        totalPatients: stats[2],
+        totalConsultations: stats[3],
+        timestamp: new Date().toISOString()
+      }
+    })
+  } catch (error) {
+    console.error('Erreur récupération stats:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la récupération des statistiques'
+    })
+  }
+})
 
 // Routes Hedera simplifiées pour les tests - v2
 app.get('/api/hedera/health', (req, res) => {
@@ -858,7 +1155,7 @@ app.get('/api/hedera/patient/:id', (req, res) => {
 });
 
 // Middleware de gestion d'erreurs
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err, req, res, next) => {
   console.error('Error:', err)
   res.status(500).json({
     error: 'Internal Server Error',
@@ -877,23 +1174,14 @@ app.use('*', (req, res) => {
   })
 })
 
-// Initialisation de la base de données pour Vercel
-let isInitialized = false
-
-async function initializeDatabase() {
-  if (!isInitialized) {
-    try {
-      await connectDatabase()
-      isInitialized = true
-      console.log('✅ Base de données initialisée pour Vercel')
-    } catch (error) {
-      console.error('❌ Erreur initialisation base de données:', error)
-    }
-  }
-}
-
 // Export pour Vercel
-export default async function handler(req: any, res: any) {
-  await initializeDatabase()
+module.exports = async function handler(req, res) {
+  // Initialisation de Prisma si nécessaire
+  try {
+    await prisma.$connect()
+  } catch (error) {
+    console.error('❌ Erreur connexion base de données:', error)
+  }
+  
   return app(req, res)
 }
