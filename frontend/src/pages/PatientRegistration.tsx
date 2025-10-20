@@ -8,6 +8,7 @@ import FileUpload from '@/components/ui/FileUpload'
 import ProgressBar from '@/components/ui/ProgressBar'
 import QRCodeGenerator from '@/components/QRCodeGenerator'
 import { useFileStorage, UploadProgress } from '@/services/fileStorageService'
+import { apiService as api } from '@/services/api'
 
 interface PatientFormData {
   nom: string
@@ -177,14 +178,33 @@ export default function PatientRegistration() {
         }
       }
 
-      // Simulate API call to create patient
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Create patient via API
+      const response = await api.createPatient({
+        patientId: patientId,
+        nom: formData.nom,
+        prenom: formData.prenom,
+        dateNaissance: formData.dateNaissance,
+        telephone: formData.telephone,
+        email: formData.email || undefined,
+        ville: formData.ville || undefined,
+        hopitalPrincipal: formData.hopitalPrincipal,
+        groupeSanguin: formData.groupeSanguin || undefined,
+        allergies: formData.allergies ? formData.allergies.split(',').map(a => a.trim()) : undefined,
+        maladiesChroniques: formData.maladiesChroniques ? formData.maladiesChroniques.split(',').map(m => m.trim()) : undefined,
+        contactUrgence: formData.contactUrgence || undefined,
+        password: formData.motDePasse
+      })
+
+      if (!response.success) {
+        throw new Error(response.error || 'Registration failed')
+      }
 
       setGeneratedPatientId(patientId)
       setIsRegistrationComplete(true)
 
     } catch (error) {
       console.error('Registration error:', error)
+      alert(error instanceof Error ? error.message : 'Registration failed. Please try again.')
     } finally {
       setIsSubmitting(false)
     }

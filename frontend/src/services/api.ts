@@ -138,14 +138,21 @@ class ApiService {
     return this.request<{ data: Patient[], count: number }>('/api/v1/patients')
   }
 
-  // Créer un nouveau patient (à implémenter côté backend)
+  // Créer un nouveau patient
   async createPatient(patientData: {
+    patientId: string
     nom: string
     prenom: string
     dateNaissance: string
     telephone: string
-    email: string
+    email?: string
+    ville?: string
     hopitalPrincipal: string
+    groupeSanguin?: string
+    allergies?: string[]
+    maladiesChroniques?: string[]
+    contactUrgence?: string
+    password: string
   }): Promise<ApiResponse<Patient>> {
     return this.request<Patient>('/api/v1/patients', {
       method: 'POST',

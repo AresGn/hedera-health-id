@@ -471,6 +471,91 @@ app.post('/api/v1/consultations', async (req, res) => {
   }
 })
 
+// Route pour créer un nouveau patient
+app.post('/api/v1/patients', async (req, res) => {
+  try {
+    const {
+      patientId,
+      nom,
+      prenom,
+      dateNaissance,
+      telephone,
+      email,
+      ville,
+      hopitalPrincipal,
+      groupeSanguin,
+      allergies,
+      maladiesChroniques,
+      contactUrgence,
+      password
+    } = req.body
+
+    // Validation des champs requis
+    if (!patientId || !nom || !prenom || !dateNaissance || !telephone || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'PatientId, nom, prenom, dateNaissance, telephone et password sont requis'
+      })
+    }
+
+    // Validation du mot de passe
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password too short',
+        message: 'Le mot de passe doit contenir au moins 6 caractères'
+      })
+    }
+
+    // Vérifier si le patient existe déjà
+    const existingPatient = await prisma.patient.findUnique({
+      where: { patientId }
+    })
+
+    if (existingPatient) {
+      return res.status(409).json({
+        success: false,
+        error: 'Patient already exists',
+        message: `Patient avec l'ID ${patientId} existe déjà`
+      })
+    }
+
+    // Pour la démo, on stocke le mot de passe en clair (en production, utiliser bcrypt)
+    const patient = await prisma.patient.create({
+      data: {
+        patientId,
+        nom,
+        prenom,
+        dateNaissance: new Date(dateNaissance),
+        telephone,
+        email,
+        ville,
+        hopitalPrincipal,
+        groupeSanguin,
+        allergies: allergies || [],
+        maladiesChroniques: maladiesChroniques || [],
+        contactUrgence,
+        passwordHash: password, // En production: await bcrypt.hash(password, 12)
+        isActive: true
+      }
+    })
+
+    return res.status(201).json({
+      success: true,
+      data: patient,
+      message: 'Patient créé avec succès'
+    })
+  } catch (error) {
+    console.error('Erreur création patient:', error)
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create patient',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
 // Route d'authentification patient
 app.post('/api/v1/auth/patient', async (req, res) => {
   try {
@@ -499,9 +584,8 @@ app.post('/api/v1/auth/patient', async (req, res) => {
       })
     }
 
-    // En production, vérifier le hash du mot de passe avec bcrypt
-    // Pour la démo, on accepte tous les mots de passe
-    const isPasswordValid = true // await bcrypt.compare(password, patient.passwordHash)
+    // Vérification simple du mot de passe (en production, utiliser bcrypt.compare)
+    const isPasswordValid = password === patient.passwordHash
 
     if (!isPasswordValid) {
       return res.status(401).json({
