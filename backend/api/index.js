@@ -7,16 +7,26 @@ const { PrismaClient } = require('@prisma/client')
 // Charger les variables d'environnement
 dotenv.config()
 
-// Initialiser Prisma
-const prisma = new PrismaClient()
+// Initialiser Prisma avec logs détaillés
+const prisma = new PrismaClient({
+  log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['error', 'warn', 'info'],
+  errorFormat: 'pretty',
+})
 
 // Configuration simplifiée
 const config = {
   NODE_ENV: process.env.NODE_ENV || 'production',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://hedera-health-id.vercel.app',
   API_VERSION: process.env.API_VERSION || '1.0.0',
-  DATABASE_URL: process.env.DATABASE_URL
+  DATABASE_URL: process.env.DATABASE_URL ? '***CONFIGURED***' : 'NOT_CONFIGURED'
 }
+
+// Log de démarrage
+console.log('🚀 Backend starting with config:', {
+  NODE_ENV: config.NODE_ENV,
+  HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+  CORS_ORIGIN: config.CORS_ORIGIN
+})
 
 const app = express()
 
@@ -74,14 +84,24 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/', async (req, res) => {
   let dbStatus = 'Unknown'
   let dbColor = 'gray'
+  let dbError = ''
   
   try {
+    // Tentative de connexion à la base de données
+    await prisma.$connect()
     await prisma.$queryRaw`SELECT 1`
     dbStatus = 'Connected'
     dbColor = 'green'
   } catch (error) {
+    console.error('Database connection error:', error)
     dbStatus = 'Disconnected'
     dbColor = 'red'
+    dbError = error.message || 'Unknown error'
+    
+    // Si c'est une erreur de variable d'environnement
+    if (!process.env.DATABASE_URL) {
+      dbError = 'DATABASE_URL not configured'
+    }
   }
   
   const html = `
@@ -218,6 +238,10 @@ app.get('/', async (req, res) => {
             <span class="status-label">Database:</span>
             <span class="status-badge status-${dbColor}">${dbStatus}</span>
           </div>
+          ${dbError ? `<div class="status-row">
+            <span class="status-label">DB Error:</span>
+            <span class="status-value" style="color: red; font-size: 0.9em;">${dbError}</span>
+          </div>` : ''}
           <div class="status-row">
             <span class="status-label">Version:</span>
             <span class="status-value">${config.API_VERSION}</span>
@@ -337,24 +361,41 @@ app.get('/', async (req, res) => {
 
 // Route de santé
 app.get('/health', async (req, res) => {
+  const healthCheck = {
+    timestamp: new Date().toISOString(),
+    version: config.API_VERSION,
+    environment: config.NODE_ENV,
+    database: {
+      configured: !!process.env.DATABASE_URL,
+      status: 'checking'
+    }
+  }
+  
   try {
     // Test de connexion à la base de données
-    await prisma.$queryRaw`SELECT 1`
-
-    return res.status(200).json({
-      status: 'OK',
-      message: 'Hedera Health API is running',
-      timestamp: new Date().toISOString(),
-      database: 'Connected',
-      version: config.API_VERSION
-    })
+    await prisma.$connect()
+    const result = await prisma.$queryRaw`SELECT 1 as test`
+    
+    healthCheck.status = 'OK'
+    healthCheck.message = 'Hedera Health API is running'
+    healthCheck.database.status = 'Connected'
+    healthCheck.database.test = result
+    
+    return res.status(200).json(healthCheck)
   } catch (error) {
-    return res.status(500).json({
-      status: 'ERROR',
-      message: 'Database connection failed',
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Unknown error'
-    })
+    console.error('Health check failed:', error)
+    
+    healthCheck.status = 'ERROR'
+    healthCheck.message = 'Database connection failed'
+    healthCheck.database.status = 'Disconnected'
+    healthCheck.database.error = error.message || 'Unknown error'
+    
+    // Ajouter plus de détails en mode développement
+    if (config.NODE_ENV !== 'production') {
+      healthCheck.database.errorStack = error.stack
+    }
+    
+    return res.status(500).json(healthCheck)
   }
 })
 
@@ -380,6 +421,65 @@ app.get('/api/v1/test', async (req, res) => {
       message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
+})
+
+// Route de debug de la base de données (à supprimer en production)
+app.get('/api/debug/database', async (req, res) => {
+  const debug = {
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      hasDBUrl: !!process.env.DATABASE_URL,
+      dbUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'NOT SET',
+      platform: process.platform,
+      nodeVersion: process.version
+    },
+    prisma: {
+      clientVersion: '@prisma/client version unknown'
+    },
+    tests: {}
+  }
+  
+  // Test 1: Connexion basique
+  try {
+    await prisma.$connect()
+    debug.tests.connect = { success: true, message: 'Connection established' }
+  } catch (error) {
+    debug.tests.connect = { 
+      success: false, 
+      message: error.message,
+      code: error.code,
+      meta: error.meta 
+    }
+  }
+  
+  // Test 2: Query simple
+  try {
+    const result = await prisma.$queryRaw`SELECT current_database(), current_schema(), version()`
+    debug.tests.query = { success: true, result }
+  } catch (error) {
+    debug.tests.query = { 
+      success: false, 
+      message: error.message,
+      code: error.code 
+    }
+  }
+  
+  // Test 3: Vérifier les tables
+  try {
+    const tables = await prisma.$queryRaw`
+      SELECT tablename FROM pg_tables 
+      WHERE schemaname = 'public' 
+      ORDER BY tablename
+    `
+    debug.tests.tables = { success: true, count: tables.length, tables }
+  } catch (error) {
+    debug.tests.tables = { 
+      success: false, 
+      message: error.message 
+    }
+  }
+  
+  return res.json(debug)
 })
 
 // Route pour lister les hôpitaux
@@ -1176,11 +1276,24 @@ app.use('*', (req, res) => {
 
 // Export pour Vercel
 module.exports = async function handler(req, res) {
+  // Log des variables d'environnement (sans les valeurs sensibles)
+  console.log('🔍 Vercel handler called:', {
+    method: req.method,
+    url: req.url,
+    hasDBUrl: !!process.env.DATABASE_URL,
+    nodeEnv: process.env.NODE_ENV
+  })
+  
   // Initialisation de Prisma si nécessaire
   try {
     await prisma.$connect()
+    console.log('✅ Database connected successfully')
   } catch (error) {
-    console.error('❌ Erreur connexion base de données:', error)
+    console.error('❌ Database connection error:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta
+    })
   }
   
   return app(req, res)
